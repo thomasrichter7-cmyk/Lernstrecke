@@ -77,6 +77,9 @@
   }
   .tab.active { background: var(--ink); color: #fff; border-color: var(--ink); }
   .tab .dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--warn); margin-left: 0.35rem; vertical-align: middle; }
+  .tab { touch-action: none; user-select: none; -webkit-user-select: none; }
+  .tab.holding { opacity: 0.85; transform: scale(1.05); box-shadow: 0 4px 14px rgba(0,0,0,0.2); z-index: 5; position: relative; }
+  .tab-wrap { display: flex; align-items: center; gap: 0.2rem; flex-shrink: 0; }
   .tab-add {
     flex-shrink: 0; width: 2rem; height: 2rem; border-radius: 50%;
     border: 1px dashed var(--faint); background: none; color: var(--muted);
@@ -203,6 +206,20 @@
   .row { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.45rem; }
   .row input { flex: 1; }
   .row .rm { border: none; background: none; color: var(--faint); cursor: pointer; font-size: 0.9rem; padding: 0.3rem; flex-shrink: 0; }
+
+  .pair-row { align-items: stretch; }
+  .pair-side { flex: 1; display: flex; gap: 0.3rem; align-items: center; min-width: 0; border-radius: 8px; transition: background .15s, box-shadow .15s; }
+  .pair-side.drop { background: var(--accent-soft); box-shadow: inset 0 0 0 2px var(--accent); }
+  .pair-side input[type=text] { flex: 1; margin: 0; }
+  .pair-side-img {
+    position: relative; flex: 1; border: 1px solid var(--line); border-radius: 8px; padding: 0.3rem;
+    display: flex; align-items: center; justify-content: center; min-height: 2.3rem; background: var(--bg);
+  }
+  .pair-side-img img { max-width: 100%; max-height: 4.5rem; height: auto; border-radius: 4px; display: block; }
+  .pair-img-rm {
+    position: absolute; top: -0.4rem; right: -0.4rem; width: 1.3rem; height: 1.3rem; border-radius: 50%;
+    border: 1px solid var(--line); background: var(--panel); color: var(--warn); font-size: 0.65rem; cursor: pointer; padding: 0;
+  }
   .row .rm:hover { color: var(--warn); }
   .radio-lbl { display: flex; align-items: center; gap: 0.3rem; font-size: 0.82rem; color: var(--muted); flex-shrink: 0; }
   .add-row {
@@ -231,6 +248,15 @@
     padding: 1.4rem 1.2rem; margin-bottom: 1rem;
   }
   .sheet h1 { font-size: 1.45rem; font-weight: 600; margin: 0 0 1rem; line-height: 1.3; }
+
+  .score-box { margin-top: 1.2rem; border-top: 1px solid var(--line); padding-top: 1.2rem; }
+  .score-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.6rem 0; border-bottom: 1px solid var(--line); font-size: 0.98rem;
+  }
+  .score-row:last-child { border-bottom: none; }
+  .score-row strong { font-size: 1.05rem; }
+  .score-empty { color: var(--muted); font-size: 0.95rem; }
   .article > *:first-child { margin-top: 0; }
   .article h2 { font-size: 1.25rem; font-weight: 600; margin: 1.4rem 0 0.5rem; line-height: 1.3; }
   .article h3 { font-size: 1.08rem; font-weight: 600; margin: 1.2rem 0 0.4rem; }
@@ -274,11 +300,13 @@
   }
   .chip.sel { border-color: var(--ink); background: var(--ink); color: #fff; }
   .chip.used { opacity: 0.35; }
+  .chip img { max-width: 100%; max-height: 7rem; height: auto; display: block; margin: 0 auto; border-radius: 4px; }
   .slot {
     padding: 0.65rem 0.85rem; margin-bottom: 0.45rem; min-height: 3.4rem;
     border: 1px dashed var(--line); border-radius: 8px; background: var(--bg); font-size: 0.9rem; cursor: pointer;
   }
   .slot .d { color: var(--muted); font-size: 0.88rem; }
+  .slot .d img, .slot .a img { max-width: 100%; max-height: 7rem; height: auto; display: block; margin: 0.2rem auto; border-radius: 4px; }
   .slot .a { font-weight: 600; margin-top: 0.3rem; }
   .slot.ok { border-color: var(--accent); border-style: solid; }
   .slot.no { border-color: var(--warn); border-style: solid; }
@@ -501,7 +529,7 @@ const newTask = t => ({
 const newPage = () => ({ id: uid('p'), title: '', html: '', task: null });
 
 let course = { title: 'Meine Lernstrecke', pages: [newPage()] };
-let mode = 'edit', pi = 0, playIdx = 0, solved = {};
+let mode = 'edit', pi = 0, playIdx = 0, solved = {}, wrongTries = {};
 
 /* ================= Modus ================= */
 function setMode(m) {
@@ -513,25 +541,85 @@ function setMode(m) {
   document.getElementById('tabs').style.display = m === 'edit' ? 'flex' : 'none';
   document.getElementById('progress').style.display = m === 'play' ? 'flex' : 'none';
   document.getElementById('courseTitle').readOnly = m === 'play';
-  if (m === 'play') { playIdx = 0; solved = {}; renderPlay(); }
+  if (m === 'play') { playIdx = 0; solved = {}; wrongTries = {}; renderPlay(); }
   else renderEdit();
 }
 
 /* ================= Bearbeiten ================= */
+let tabHold = null;       // aktiver Halte-/Verschiebevorgang
+let suppressTabClick = false;
+
 function renderTabs() {
   const el = document.getElementById('tabs');
   el.innerHTML = '';
   course.pages.forEach((p, i) => {
+    const wrap = document.createElement('span');
+    wrap.className = 'tab-wrap';
     const b = document.createElement('button');
     b.className = 'tab' + (i === pi ? ' active' : '');
     b.innerHTML = (p.title ? esc(p.title.slice(0, 22)) : '<span style="opacity:.5">Ohne Titel</span>') + (p.task ? '<span class="dot"></span>' : '');
-    b.onclick = () => { pi = i; renderEdit(); };
-    el.appendChild(b);
+    b.onclick = () => { if (suppressTabClick) { suppressTabClick = false; return; } pi = i; renderEdit(); };
+    b.onpointerdown = e => startTabHold(e, i, b);
+    wrap.appendChild(b);
+    el.appendChild(wrap);
   });
   const add = document.createElement('button');
   add.className = 'tab-add'; add.textContent = '+'; add.title = 'Seite hinzufügen';
   add.onclick = () => { course.pages.push(newPage()); pi = course.pages.length - 1; renderEdit(); window.scrollTo({ top: 0 }); };
   el.appendChild(add);
+}
+
+// Reiter festhalten (kurze Verzögerung), danach mit dem Finger/der Maus verschieben
+function startTabHold(e, idx, el) {
+  if (e.button !== undefined && e.button !== 0) return;
+  const startX = e.clientX, startY = e.clientY, pid = e.pointerId;
+  let active = false;
+
+  const activate = () => {
+    active = true;
+    tabHold = { idx };
+    el.classList.add('holding');
+    try { el.setPointerCapture(pid); } catch (_) {}
+  };
+  const holdTimer = setTimeout(activate, 220);
+
+  const onMove = ev => {
+    if (!active) {
+      if (Math.abs(ev.clientX - startX) > 10 || Math.abs(ev.clientY - startY) > 10) finish(false);
+      return;
+    }
+    ev.preventDefault();
+    const rail = document.getElementById('tabs');
+    const tabs = [...rail.querySelectorAll('.tab')];
+    let newIdx = tabs.length - 1;
+    for (let k = 0; k < tabs.length; k++) {
+      const r = tabs[k].getBoundingClientRect();
+      if (ev.clientX < r.left + r.width / 2) { newIdx = k; break; }
+    }
+    if (newIdx !== tabHold.idx) {
+      const [moved] = course.pages.splice(tabHold.idx, 1);
+      course.pages.splice(newIdx, 0, moved);
+      tabHold.idx = newIdx; pi = newIdx;
+      renderTabs();
+      const fresh = [...document.getElementById('tabs').querySelectorAll('.tab')][newIdx];
+      if (fresh) { fresh.classList.add('holding'); try { fresh.setPointerCapture(pid); } catch (_) {} }
+    }
+  };
+  const onUp = () => finish(active);
+  function finish(wasActive) {
+    clearTimeout(holdTimer);
+    document.removeEventListener('pointermove', onMove);
+    document.removeEventListener('pointerup', onUp);
+    document.removeEventListener('pointercancel', onUp);
+    if (wasActive) {
+      suppressTabClick = true;
+      tabHold = null;
+      renderEdit();
+    }
+  }
+  document.addEventListener('pointermove', onMove);
+  document.addEventListener('pointerup', onUp);
+  document.addEventListener('pointercancel', onUp);
 }
 
 function renderEdit() {
@@ -568,6 +656,12 @@ function renderEdit() {
         </div>`}
       <div id="taskEd"></div>
     </div>
+    ${pi === course.pages.length - 1 ? `
+      <div class="footer-zone">
+        <div class="footer-label">Auswertung nach der Lektion (automatisch)</div>
+        <p class="hint" style="margin-top:-0.2rem;margin-bottom:0.5rem;">Nach dieser Seite sehen Schüler automatisch eine Auswertung mit Punktzahl. Optional kannst du hier noch die wichtigsten Punkte der Lektion ergänzen.</p>
+        <textarea placeholder="z. B. Wichtig war heute: Kraft wird in Newton gemessen, es gibt vier Grundkräfte …" oninput="course.summaryText=this.value">${esc(course.summaryText || '')}</textarea>
+      </div>` : ''}
     <div class="page-tools">
       <button onclick="delPage()">Seite löschen</button>
     </div>
@@ -908,20 +1002,19 @@ function onPaste(e) {
 const MAX_DIM = 1600;      // längste Seite in Pixeln, auf die verkleinert wird
 const MAX_IMG = 4 * 1024 * 1024; // Sicherheitsgrenze für Dateien, die sich nicht verkleinern lassen (z. B. GIF)
 
-function insertImageFile(file) {
+// Bild einlesen, automatisch verkleinern/komprimieren, Ergebnis (Data-URL) an cb übergeben
+function processImageFile(file, cb) {
   if (!file.type.startsWith('image/')) return toast('Nur Bilddateien werden unterstützt.');
 
-  // Animierte GIFs nicht neu zeichnen (sonst geht die Animation verloren) — nur Größe prüfen
   if (file.type === 'image/gif') {
     if (file.size > MAX_IMG) return toast('GIF ist zu groß (über 4 MB) — bitte vorher verkleinern.');
     const r = new FileReader();
-    r.onload = () => ins(`<img src="${r.result}">`);
+    r.onload = () => cb(r.result);
     r.onerror = () => toast('Bild konnte nicht gelesen werden.');
     r.readAsDataURL(file);
     return;
   }
 
-  // Alle anderen Bilder automatisch auf eine vernünftige Größe verkleinern
   const img = new Image();
   const url = URL.createObjectURL(file);
   img.onload = () => {
@@ -932,14 +1025,17 @@ function insertImageFile(file) {
     canvas.width = w; canvas.height = h;
     const ctx = canvas.getContext('2d');
     ctx.drawImage(img, 0, 0, w, h);
-    // PNGs mit Transparenz bleiben PNG, alles andere wird als komprimiertes JPEG gespeichert
     const keepPng = file.type === 'image/png' && hasTransparency(ctx, w, h);
     const dataUrl = keepPng ? canvas.toDataURL('image/png') : canvas.toDataURL('image/jpeg', 0.82);
     if (dataUrl.length > MAX_IMG) return toast('Bild ist auch verkleinert noch sehr groß — bitte ein kleineres Bild verwenden.');
-    ins(`<img src="${dataUrl}">`);
+    cb(dataUrl);
   };
   img.onerror = () => { URL.revokeObjectURL(url); toast('Bild konnte nicht gelesen werden.'); };
   img.src = url;
+}
+
+function insertImageFile(file) {
+  processImageFile(file, dataUrl => ins(`<img src="${dataUrl}">`));
 }
 
 // Stichprobe auf durchsichtige Pixel, um zu entscheiden ob PNG erhalten bleiben muss
@@ -1213,10 +1309,10 @@ function taskEditor(t) {
       <div class="hint">Groß-/Kleinschreibung wird ignoriert. Ohne Hinweistext steht einfach „Gib das Lösungswort ein."</div>`;
   }
   if (t.type === 'dragdrop') {
-    body = `<label class="fld">Begriff und passende Definition</label>` +
-      t.pairs.map((p, i) => `<div class="row">
-        <input type="text" value="${attr(p.term)}" placeholder="Begriff" oninput="T().pairs[${i}].term=this.value">
-        <input type="text" value="${attr(p.def)}" placeholder="Definition" oninput="T().pairs[${i}].def=this.value">
+    body = `<label class="fld">Begriff und passende Definition (auch als Bild möglich)</label>` +
+      t.pairs.map((p, i) => `<div class="row pair-row">
+        ${pairSideEditor(p.term, 'term', i)}
+        ${pairSideEditor(p.def, 'def', i)}
         <button class="rm" onclick="rmPair(${i})">✕</button></div>`).join('') +
       `<button class="add-row" onclick="addPair()">+ Paar</button>`;
   }
@@ -1242,6 +1338,46 @@ const addOpt = () => { T().opts.push(''); renderEdit(); };
 const rmOpt = i => { const t = T(); if (t.opts.length <= 2) return toast('Mindestens zwei Antworten nötig.'); t.opts.splice(i, 1); if (t.correct >= t.opts.length) t.correct = 0; renderEdit(); };
 const addPair = () => { T().pairs.push({ term: '', def: '' }); renderEdit(); };
 const rmPair = i => { const t = T(); if (t.pairs.length <= 2) return toast('Mindestens zwei Paare nötig.'); t.pairs.splice(i, 1); renderEdit(); };
+
+/* ---------- Bild oder Text bei Zuordnen-Paaren ---------- */
+const isImgVal = v => /^data:image\//.test(v || '') || isImg(v || '');
+
+function pairSideEditor(value, side, i) {
+  if (isImgVal(value)) {
+    return `<div class="pair-side pair-side-img">
+      <img src="${attr(value)}">
+      <button class="pair-img-rm" onclick="clearPairImage(${i}, '${side}')" title="Bild entfernen">✕</button>
+    </div>`;
+  }
+  return `<div class="pair-side" ondragover="onPairDragOver(event)" ondragleave="onPairDragLeave(event)" ondrop="onPairDrop(event, ${i}, '${side}')">
+    <input type="text" value="${attr(value)}" placeholder="${side === 'term' ? 'Begriff' : 'Definition'}"
+      oninput="T().pairs[${i}].${side}=this.value" onpaste="onPairPaste(event, ${i}, '${side}')">
+  </div>`;
+}
+
+function setPairImage(i, side, file) {
+  processImageFile(file, dataUrl => { T().pairs[i][side] = dataUrl; renderEdit(); });
+}
+function clearPairImage(i, side) { T().pairs[i][side] = ''; renderEdit(); }
+
+function onPairPaste(e, i, side) {
+  const img = [...(e.clipboardData.items || [])].find(it => it.type && it.type.startsWith('image/'));
+  if (!img) return; // normaler Text-Paste läuft ganz normal weiter
+  e.preventDefault();
+  const file = img.getAsFile();
+  if (file) setPairImage(i, side, file);
+}
+
+function onPairDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drop'); }
+function onPairDragLeave(e) { e.currentTarget.classList.remove('drop'); }
+function onPairDrop(e, i, side) {
+  e.preventDefault(); e.currentTarget.classList.remove('drop');
+  const files = [...(e.dataTransfer.files || [])].filter(f => f.type.startsWith('image/'));
+  if (files.length) return setPairImage(i, side, files[0]);
+  const txt = (e.dataTransfer.getData('text/uri-list') || e.dataTransfer.getData('text/plain') || '').trim();
+  if (txt && isImg(txt)) { T().pairs[i][side] = txt; renderEdit(); }
+  else toast('Bitte ein Bild oder einen Bild-Link hierher ziehen.');
+}
 const addItem = () => { T().items.push(''); renderEdit(); };
 const rmItem = i => { const t = T(); if (t.items.length <= 2) return toast('Mindestens zwei Schritte nötig.'); t.items.splice(i, 1); renderEdit(); };
 
@@ -1264,11 +1400,21 @@ const rmAnswer = i => { const t = T(); if (t.answers.length <= 1) return toast('
 /* ================= Schüleransicht ================= */
 function renderProgress() {
   const el = document.getElementById('progress');
+  const atSummary = playIdx >= course.pages.length;
   el.innerHTML = course.pages.map((_, i) =>
-    `<i class="${i < playIdx ? 'done' : i === playIdx ? 'now' : ''}"></i>`).join('');
+    `<i class="${i < playIdx || atSummary ? 'done' : i === playIdx ? 'now' : ''}"></i>`).join('');
+}
+
+function taskScore() {
+  const tasks = course.pages.filter(p => p.task).map(p => p.task);
+  const total = tasks.length;
+  const firstTry = tasks.filter(t => !wrongTries[t.id]).length;
+  const totalWrong = tasks.reduce((sum, t) => sum + (wrongTries[t.id] || 0), 0);
+  return { total, firstTry, totalWrong };
 }
 
 function renderPlay() {
+  if (playIdx >= course.pages.length) return renderSummary();
   const p = course.pages[playIdx];
   const w = document.getElementById('play');
   const done = !p.task || solved[p.id];
@@ -1282,7 +1428,7 @@ function renderPlay() {
     <div class="nav"><div class="nav-inner">
       ${playIdx > 0 ? '<button onclick="go(-1)">Zurück</button>' : ''}
       <span class="count">${playIdx + 1}/${course.pages.length}</span>
-      <button class="main" onclick="go(1)" ${(!done || last) ? 'disabled' : ''}>${last ? (done ? 'Fertig' : 'Weiter') : 'Weiter'}</button>
+      <button class="main" onclick="go(1)" ${!done ? 'disabled' : ''}>${last ? 'Auswertung ansehen' : 'Weiter'}</button>
     </div>
     ${!done ? '<div class="locked-note">Löse die Aufgabe, um fortzufahren.</div>' : ''}</div>
   `;
@@ -1291,17 +1437,42 @@ function renderPlay() {
   document.getElementById('courseTitle').value = course.title;
 }
 
+function renderSummary() {
+  const w = document.getElementById('play');
+  const { total, firstTry, totalWrong } = taskScore();
+  w.innerHTML = `
+    <div class="sheet">
+      <h1>Auswertung</h1>
+      ${course.summaryText ? `<div class="article"><p>${esc(course.summaryText).replace(/\n/g, '<br>')}</p></div>` : ''}
+      <div class="score-box">
+        ${total > 0 ? `
+          <div class="score-row"><span>Aufgaben bearbeitet</span><strong>${total}</strong></div>
+          <div class="score-row"><span>Beim ersten Versuch richtig</span><strong>${firstTry} von ${total}</strong></div>
+          <div class="score-row"><span>Falsche Versuche insgesamt</span><strong>${totalWrong}</strong></div>
+        ` : `<p class="score-empty">Diese Lektion enthielt keine Aufgaben zum Auswerten.</p>`}
+      </div>
+    </div>
+    <div class="nav"><div class="nav-inner">
+      <button onclick="go(-1)">Zurück zur Lektion</button>
+      <span class="count">Abgeschlossen</span>
+    </div></div>
+  `;
+  renderProgress();
+  document.getElementById('courseTitle').value = course.title;
+}
+
 function go(d) {
   const j = playIdx + d;
-  if (j < 0 || j >= course.pages.length) return;
+  if (j < 0 || j > course.pages.length) return;
   playIdx = j; renderPlay(); window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 function done(pid) { solved[pid] = true; renderPlayNav(); }
+function wrong(tid) { wrongTries[tid] = (wrongTries[tid] || 0) + 1; }
 function renderPlayNav() {
   const p = course.pages[playIdx];
   const btn = document.querySelector('.nav .main');
   const last = playIdx === course.pages.length - 1;
-  if (btn) { btn.disabled = last; btn.textContent = last ? 'Fertig' : 'Weiter'; }
+  if (btn) { btn.disabled = false; btn.textContent = last ? 'Auswertung ansehen' : 'Weiter'; }
   const note = document.querySelector('.locked-note'); if (note) note.remove();
 }
 
@@ -1320,7 +1491,7 @@ function renderTask(page, host) {
         if (i === t.correct) {
           b.classList.add('ok'); fb.textContent = 'Richtig.'; fb.className = 'fb ok';
           wrap.querySelectorAll('.opt').forEach(x => x.disabled = true); done(page.id);
-        } else { b.classList.add('no'); fb.textContent = 'Noch nicht richtig.'; fb.className = 'fb no'; }
+        } else { b.classList.add('no'); fb.textContent = 'Noch nicht richtig.'; fb.className = 'fb no'; wrong(t.id); }
       };
       wrap.appendChild(b);
     });
@@ -1352,7 +1523,7 @@ function renderTask(page, host) {
       if (ok) {
         fb.textContent = 'Richtig.'; fb.className = 'fb ok'; kb.disabled = true;
         wrap.querySelectorAll('.opt').forEach(b => b.disabled = true); done(page.id);
-      } else { fb.textContent = 'Noch nicht richtig — prüfe deine Auswahl.'; fb.className = 'fb no'; }
+      } else { fb.textContent = 'Noch nicht richtig — prüfe deine Auswahl.'; fb.className = 'fb no'; wrong(t.id); }
     };
   }
 
@@ -1367,7 +1538,7 @@ function renderTask(page, host) {
         if (val === t.answer) {
           b.classList.add('ok'); fb.textContent = 'Richtig.'; fb.className = 'fb ok';
           wrap.querySelectorAll('.opt').forEach(x => x.disabled = true); done(page.id);
-        } else { b.classList.add('no'); fb.textContent = 'Noch nicht richtig.'; fb.className = 'fb no'; }
+        } else { b.classList.add('no'); fb.textContent = 'Noch nicht richtig.'; fb.className = 'fb no'; wrong(t.id); }
       };
       wrap.appendChild(b);
     });
@@ -1386,7 +1557,7 @@ function renderTask(page, host) {
       const ok = v !== '' && t.answers.some(a => a.trim().toLowerCase() === v);
       inp.classList.remove('ok', 'no'); inp.classList.add(ok ? 'ok' : 'no');
       if (ok) { fb.textContent = 'Richtig.'; fb.className = 'fb ok'; inp.disabled = true; kb.disabled = true; done(page.id); }
-      else { fb.textContent = 'Noch nicht richtig.'; fb.className = 'fb no'; }
+      else { fb.textContent = 'Noch nicht richtig.'; fb.className = 'fb no'; wrong(t.id); }
     };
     kb.onclick = chk;
     inp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); chk(); } };
@@ -1404,7 +1575,7 @@ function renderTask(page, host) {
       const ok = v !== '' && t.answers.some(a => a.trim().toLowerCase() === v);
       inp.classList.remove('ok', 'no'); inp.classList.add(ok ? 'ok' : 'no');
       if (ok) { fb.textContent = 'Richtig.'; fb.className = 'fb ok'; inp.disabled = true; kb.disabled = true; done(page.id); }
-      else { fb.textContent = 'Noch nicht richtig — Lösungswort prüfen.'; fb.className = 'fb no'; }
+      else { fb.textContent = 'Noch nicht richtig — Lösungswort prüfen.'; fb.className = 'fb no'; wrong(t.id); }
     };
     kb.onclick = chk;
     inp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); chk(); } };
@@ -1424,7 +1595,7 @@ function renderTask(page, host) {
       terms.forEach(tm => {
         const c = document.createElement('div');
         c.className = 'chip' + (sel === tm.i ? ' sel' : '') + (Object.values(put).includes(tm.i) ? ' used' : '');
-        c.textContent = tm.text;
+        c.innerHTML = isImgVal(tm.text) ? `<img src="${attr(tm.text)}">` : esc(tm.text);
         if (!was) c.onclick = () => { sel = sel === tm.i ? null : tm.i; draw(); };
         cw.appendChild(c);
       });
@@ -1432,7 +1603,9 @@ function renderTask(page, host) {
         const s = document.createElement('div');
         s.className = 'slot' + (was ? ' ok' : '');
         const cur = put[si] != null ? t.pairs[put[si]].term : '';
-        s.innerHTML = `<div class="d">${esc(p.def)}</div>${cur ? `<div class="a">${esc(cur)}</div>` : ''}`;
+        const defHtml = isImgVal(p.def) ? `<img src="${attr(p.def)}">` : esc(p.def);
+        const curHtml = cur ? (isImgVal(cur) ? `<img src="${attr(cur)}">` : esc(cur)) : '';
+        s.innerHTML = `<div class="d">${defHtml}</div>${curHtml ? `<div class="a">${curHtml}</div>` : ''}`;
         if (!was) s.onclick = () => {
           if (sel != null) { Object.keys(put).forEach(k => { if (put[k] === sel) delete put[k]; }); put[si] = sel; sel = null; }
           else if (put[si] != null) delete put[si];
@@ -1449,7 +1622,7 @@ function renderTask(page, host) {
         const ok = put[si] === si; s.classList.remove('ok', 'no'); s.classList.add(ok ? 'ok' : 'no'); if (!ok) all = false;
       });
       if (all) { fb.textContent = 'Alles richtig zugeordnet.'; fb.className = 'fb ok'; kb.disabled = true; done(page.id); }
-      else { fb.textContent = 'Noch nicht alles richtig.'; fb.className = 'fb no'; }
+      else { fb.textContent = 'Noch nicht alles richtig.'; fb.className = 'fb no'; wrong(t.id); }
     };
   }
 
@@ -1474,7 +1647,7 @@ function renderTask(page, host) {
         fb.textContent = 'Alles richtig.'; fb.className = 'fb ok'; kb.disabled = true;
         segs.filter(s => s.blank).forEach((s, i) => document.getElementById('g_' + t.id + '_' + i).disabled = true);
         done(page.id);
-      } else { fb.textContent = 'Noch nicht alles richtig.'; fb.className = 'fb no'; }
+      } else { fb.textContent = 'Noch nicht alles richtig.'; fb.className = 'fb no'; wrong(t.id); }
     };
   }
 
@@ -1510,7 +1683,7 @@ function renderTask(page, host) {
         const ok = cur[idx].i === idx; r.classList.remove('ok', 'no'); r.classList.add(ok ? 'ok' : 'no'); if (!ok) all = false;
       });
       if (all) { fb.textContent = 'Richtige Reihenfolge.'; fb.className = 'fb ok'; kb.disabled = true; done(page.id); }
-      else { fb.textContent = 'Noch nicht richtig.'; fb.className = 'fb no'; }
+      else { fb.textContent = 'Noch nicht richtig.'; fb.className = 'fb no'; wrong(t.id); }
     };
   }
 }
@@ -1559,7 +1732,7 @@ function normTask(t) {
 }
 
 function applyCourse(d) {
-  course = { title: d.title || 'Lernstrecke', pages: (d.pages || []).map(p => ({
+  course = { title: d.title || 'Lernstrecke', summaryText: d.summaryText || '', pages: (d.pages || []).map(p => ({
     id: p.id || uid('p'), title: p.title || '',
     html: p.html !== undefined ? p.html : (p.blocks ? p.blocks.map(b => b.html || '').join('') : ''),
     task: normTask(p.task || p.gate)
