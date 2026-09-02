@@ -103,10 +103,11 @@
 
   .canvas {
     background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
-    padding: 1.1rem; min-height: 45vh; position: relative;
+    padding: 1.1rem 1.1rem 3.4rem; min-height: 45vh; position: relative;
   }
 
   .editor img.media-sel, .editor iframe.media-sel { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .editor .zi.media-sel { outline: 2px solid var(--accent); outline-offset: 2px; }
   .editor img, .editor iframe { cursor: pointer; }
   .editor iframe { pointer-events: none; }
 
@@ -130,6 +131,11 @@
   }
   .res-handle.hide { display: none; }
   .editor { min-height: 40vh; font-size: 1rem; line-height: 1.7; }
+  .zi-editor {
+    min-height: 8rem; max-height: 45vh; overflow-y: auto; border: 1px solid var(--line);
+    border-radius: 8px; padding: 0.6rem 0.75rem; background: var(--bg);
+  }
+  .zi-editor:focus { outline: none; border-color: var(--accent); }
   .editor:focus { outline: none; }
   .editor:empty:before { content: attr(data-ph); color: var(--faint); }
   .editor > *:first-child { margin-top: 0; }
@@ -151,6 +157,48 @@
   .editor table { width: 100%; border-collapse: collapse; margin: 0 0 0.9rem; font-size: 0.94rem; }
   .editor th, .editor td { border: 1px solid var(--line); padding: 0.45rem 0.6rem; text-align: left; }
   .editor code { background: #f3f4f6; padding: 0.1rem 0.3rem; border-radius: 4px; font-size: 0.9em; }
+  .editor .zi, .article .zi {
+    margin: 1rem 0; border: 1px solid var(--accent); border-radius: 8px; background: var(--accent-soft); overflow: hidden;
+  }
+  .editor .zi.zi-holding { opacity: 0.85; box-shadow: 0 6px 18px rgba(0,0,0,0.18); position: relative; z-index: 5; }
+  .editor .zi summary, .article .zi summary {
+    padding: 0.7rem 1rem; cursor: pointer; font-weight: 500; color: var(--accent);
+    list-style: none; display: flex; align-items: center; gap: 0.5rem;
+  }
+  .editor .zi summary { touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; }
+  .editor .zi.zi-holding summary { cursor: grabbing; }
+  .editor .zi summary::-webkit-details-marker { display: none; }
+  .editor .zi summary::before, .article .zi summary::before { content: '▸'; transition: transform .15s; }
+  .editor .zi[open] summary::before, .article .zi[open] summary::before { transform: rotate(90deg); }
+  .editor .zi-body, .article .zi-body { padding: 0 1rem 1rem; }
+  .editor .zi-body p:first-child, .article .zi-body p:first-child { margin-top: 0; }
+  .zi-title { flex: 1; }
+  .editor .zi-grip { color: var(--accent); opacity: 0.6; flex-shrink: 0; font-size: 0.9rem; }
+  .article .zi-grip { display: none; }
+  .editor .zi-edit, .editor .zi-x {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 1.4rem; height: 1.4rem; border-radius: 50%; flex-shrink: 0;
+    color: var(--accent); font-size: 0.75rem; cursor: pointer;
+  }
+  .editor .zi-edit:hover { background: rgba(0,0,0,0.08); }
+  .editor .zi-x:hover { background: rgba(0,0,0,0.08); color: var(--warn); }
+  .article .zi-edit, .article .zi-x { display: none; }
+
+  .canvas-tools { position: absolute; bottom: 0.7rem; right: 0.7rem; display: flex; gap: 0.4rem; }
+  .zi-btn, .code-btn {
+    padding: 0.45rem 0.75rem; border-radius: 8px; font-size: 0.82rem; cursor: pointer; font-family: inherit;
+  }
+  .zi-btn { border: 1px dashed var(--accent); background: var(--accent-soft); color: var(--accent); }
+  .zi-btn:hover { background: var(--accent); color: #fff; }
+  .code-btn { border: 1px dashed var(--muted); background: var(--bg); color: var(--muted); }
+  .code-btn:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+  .code-view {
+    width: 100%; min-height: 40vh; border: none; background: #1c1f24; color: #d8dee9;
+    font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.85rem; line-height: 1.6;
+    padding-bottom: 2.6rem; resize: vertical;
+  }
+  .code-view:focus { outline: none; }
 
   .insert {
     position: absolute; bottom: 0.7rem; right: 0.7rem;
@@ -179,13 +227,17 @@
     font-size: 0.76rem; color: var(--faint); text-transform: uppercase;
     letter-spacing: 0.05em; margin-bottom: 0.5rem;
   }
-  .footer-choice { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .footer-choice { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+  .footer-status {
+    padding: 0.55rem 0.9rem; font-size: 0.9rem; color: var(--accent); font-weight: 500;
+  }
   .choice-pill {
     padding: 0.55rem 1rem; border-radius: 8px; font-size: 0.9rem; cursor: pointer;
     border: 1px solid var(--line); background: var(--panel); color: var(--muted); font-family: inherit;
   }
-  .choice-pill.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 500; }
   .choice-pill:hover { border-color: var(--accent); }
+  .choice-pill.paste-pill { border-style: dashed; color: var(--accent); border-color: #9fbdb0; }
+  .choice-pill.paste-pill:hover { background: var(--accent-soft); }
 
   .task-box {
     background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--warn);
@@ -210,6 +262,7 @@
   .pair-row { align-items: stretch; }
   .pair-side { flex: 1; display: flex; gap: 0.3rem; align-items: center; min-width: 0; border-radius: 8px; transition: background .15s, box-shadow .15s; }
   .pair-side.drop { background: var(--accent-soft); box-shadow: inset 0 0 0 2px var(--accent); }
+  .pair-row.row-drop { background: var(--accent-soft); box-shadow: inset 0 0 0 2px var(--accent); border-radius: 8px; }
   .pair-side input[type=text] { flex: 1; margin: 0; }
   .pair-side-img {
     position: relative; flex: 1; border: 1px solid var(--line); border-radius: 8px; padding: 0.3rem;
@@ -424,9 +477,9 @@
     <div class="topbar-actions">
       <button class="icon-btn on" id="btnEdit" onclick="setMode('edit')" title="Bearbeiten">✎</button>
       <button class="icon-btn" id="btnPlay" onclick="setMode('play')" title="Schüleransicht">▷</button>
-      <span class="tb-sep"></span>
-      <button class="icon-btn" onclick="document.getElementById('fileIn').click()" title="Lektion öffnen (.html oder .json)">Öffnen</button>
-      <button class="icon-btn wide" onclick="exportStudent()" title="Fertige Lektion herunterladen">Lektion sichern</button>
+      <span class="tb-sep" id="tbSep"></span>
+      <button class="icon-btn" id="btnOpenFile" onclick="document.getElementById('fileIn').click()" title="Lektion öffnen (.html oder .json)">Öffnen</button>
+      <button class="icon-btn wide" id="btnSaveLesson" onclick="exportStudent()" title="Fertige Lektion herunterladen">Lektion sichern</button>
     </div>
   </div>
   <div class="page-tabs" id="tabs"></div>
@@ -485,6 +538,25 @@
   </div>
 </div>
 
+<div class="modal hide" id="ziModal">
+  <div class="modal-box wide">
+    <div class="modal-head">
+      <h3 id="ziModalTitle">Zusatzinfo einfügen</h3>
+      <button class="modal-x" onclick="closeZiModal()" title="Abbrechen">✕</button>
+    </div>
+    <p class="ai-intro">Wird als aufklappbare Leiste eingefügt — Schüler entscheiden selbst, ob sie reinschauen. Gut für Vertiefung, z. B. im E-Kurs.</p>
+    <label class="fld">Überschrift der Leiste</label>
+    <input type="text" id="ziTitle" placeholder="z. B. Geschichte der Kraftmessung">
+    <label class="fld">Inhalt (erscheint beim Aufklappen)</label>
+    <div class="editor zi-editor" id="ziBody" contenteditable="true"
+         data-ph="Text schreiben, Bilder ziehen, Links und Einbettungscode einfach reinkopieren — genau wie auf der Seite selbst."
+         onpaste="onPaste(event)" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)"></div>
+    <div class="dlg-btns">
+      <button class="dlg-ok" id="ziSubmitBtn" onclick="insertZusatzinfo()">Einfügen</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal hide" id="askModal">
   <div class="modal-box">
     <div class="modal-head">
@@ -529,7 +601,7 @@ const newTask = t => ({
 const newPage = () => ({ id: uid('p'), title: '', html: '', task: null });
 
 let course = { title: 'Meine Lernstrecke', pages: [newPage()] };
-let mode = 'edit', pi = 0, playIdx = 0, solved = {}, wrongTries = {};
+let mode = 'edit', pi = 0, playIdx = 0, solved = {}, wrongTries = {}, codeMode = false;
 
 /* ================= Modus ================= */
 function setMode(m) {
@@ -541,6 +613,10 @@ function setMode(m) {
   document.getElementById('tabs').style.display = m === 'edit' ? 'flex' : 'none';
   document.getElementById('progress').style.display = m === 'play' ? 'flex' : 'none';
   document.getElementById('courseTitle').readOnly = m === 'play';
+  // In der Vorschau nur zeigen, was Schüler auch wirklich sehen — Bearbeiten-Aktionen ausblenden
+  document.getElementById('tbSep').style.display = m === 'play' ? 'none' : '';
+  document.getElementById('btnOpenFile').style.display = m === 'play' ? 'none' : '';
+  document.getElementById('btnSaveLesson').style.display = m === 'play' ? 'none' : '';
   if (m === 'play') { playIdx = 0; solved = {}; wrongTries = {}; renderPlay(); }
   else renderEdit();
 }
@@ -558,14 +634,14 @@ function renderTabs() {
     const b = document.createElement('button');
     b.className = 'tab' + (i === pi ? ' active' : '');
     b.innerHTML = (p.title ? esc(p.title.slice(0, 22)) : '<span style="opacity:.5">Ohne Titel</span>') + (p.task ? '<span class="dot"></span>' : '');
-    b.onclick = () => { if (suppressTabClick) { suppressTabClick = false; return; } pi = i; renderEdit(); };
+    b.onclick = () => { if (suppressTabClick) { suppressTabClick = false; return; } pi = i; codeMode = false; renderEdit(); };
     b.onpointerdown = e => startTabHold(e, i, b);
     wrap.appendChild(b);
     el.appendChild(wrap);
   });
   const add = document.createElement('button');
   add.className = 'tab-add'; add.textContent = '+'; add.title = 'Seite hinzufügen';
-  add.onclick = () => { course.pages.push(newPage()); pi = course.pages.length - 1; renderEdit(); window.scrollTo({ top: 0 }); };
+  add.onclick = () => { course.pages.push(newPage()); pi = course.pages.length - 1; codeMode = false; renderEdit(); window.scrollTo({ top: 0 }); };
   el.appendChild(add);
 }
 
@@ -629,30 +705,29 @@ function renderEdit() {
   w.innerHTML = `
     <input class="page-name" id="pgName" value="${attr(p.title)}" placeholder="Seitentitel" oninput="setTitle(this.value)">
     <div class="canvas">
-      <div class="editor" id="ed" contenteditable="true"
-           data-ph="Schreib los. Text einfügen, Bilder ziehen, Links und Einbettungscode einfach reinkopieren — wird automatisch erkannt."
-           oninput="p_html(this.innerHTML)" onpaste="onPaste(event)" onblur="linkify()"
-           onclick="onEdClick(event)"
-           ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">${p.html}</div>
-      <div class="media-bar hide" id="mediaBar">
-        <button onclick="setMediaWidth('clamp(160px, 30%, 100%)')">Klein</button>
-        <button onclick="setMediaWidth('clamp(220px, 55%, 100%)')">Mittel</button>
-        <button onclick="setMediaWidth('clamp(280px, 80%, 100%)')">Groß</button>
-        <button onclick="setMediaWidth('100%')">Voll</button>
-        <span class="mb-sep"></span>
-        <button onclick="setMediaAlign('left')" title="Linksbündig">⇤</button>
-        <button onclick="setMediaAlign('center')" title="Mittig">↔</button>
-        <span class="mb-sep"></span>
-        <button class="mb-del" onclick="deleteMedia()">Löschen</button>
+      ${codeMode ? `
+        <textarea id="edCode" class="code-view" spellcheck="false" oninput="p_html(this.value)">${esc(prettyHtml(p.html))}</textarea>
+      ` : `
+        <div class="editor" id="ed" contenteditable="true"
+             data-ph="Schreib los. Text einfügen, Bilder ziehen, Links und Einbettungscode einfach reinkopieren — wird automatisch erkannt."
+             oninput="p_html(this.innerHTML)" onpaste="onPaste(event)" onblur="linkify()"
+             onclick="onEdClick(event)" onpointerdown="onEdPointerDown(event)"
+             ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">${p.html}</div>
+      `}
+      <div class="canvas-tools">
+        ${codeMode ? '' : '<button class="zi-btn" onclick="openZiModal()" title="Aufklappbare Zusatzinfo einfügen (z. B. für den E-Kurs)">+ Zusatzinfo</button>'}
+        <button class="code-btn" onclick="toggleCodeView()" title="${codeMode ? 'Zurück zur normalen Ansicht' : 'HTML-Code anzeigen, z. B. um ihn einer KI zum Umstyeln zu geben'}">${codeMode ? '✓ Fertig' : '</> Code'}</button>
       </div>
+      <div class="media-bar hide" id="mediaBar"></div>
       <div class="res-handle hide" id="resHandle"></div>
     </div>
     <div class="footer-zone">
       <div class="footer-label">Am Ende der Seite</div>
       ${p.task ? '' : `
         <div class="footer-choice">
-          <div class="choice-pill on">Weiter</div>
+          <div class="footer-status">✓ Einfach weiter</div>
           <button class="choice-pill" onclick="openTaskModal()">Aufgabe zum Weiterkommen</button>
+          ${clipboardTask ? `<button class="choice-pill paste-pill" onclick="pasteTask()" title="${esc(TN[clipboardTask.type])} — von „${esc(clipboardTask._fromPage || 'anderer Seite')}"">📋 Kopierte Aufgabe einfügen</button>` : ''}
         </div>`}
       <div id="taskEd"></div>
     </div>
@@ -712,15 +787,15 @@ function toast(msg) {
 function delPage() {
   if (course.pages.length < 2) return toast('Es muss mindestens eine Seite geben.');
   confirmBox('Diese Seite wirklich löschen?', () => {
-    course.pages.splice(pi, 1); pi = Math.max(0, pi - 1); renderEdit();
+    course.pages.splice(pi, 1); pi = Math.max(0, pi - 1); codeMode = false; renderEdit();
   });
 }
 
 /* ================= Einfügen ================= */
 const ed = () => document.getElementById('ed');
 
-function ins(html) {
-  const e = ed(); if (!e) return;
+function ins(html, target) {
+  const e = target || ed(); if (!e) return;
   e.focus();
   const sel = window.getSelection();
   const inside = sel && sel.rangeCount && e.contains(sel.anchorNode);
@@ -732,12 +807,29 @@ function ins(html) {
   let ok = false;
   try { ok = document.execCommand('insertHTML', false, html); } catch (x) { ok = false; }
   if (!ok) e.insertAdjacentHTML('beforeend', html);
-  p_html(e.innerHTML);
+  if (e.id === 'ed') p_html(e.innerHTML); // nur die Hauptseite ist Teil des Kursmodells
 }
 /* ---------- Bild oder Einbettung anklicken, um Größe zu ändern ---------- */
 let selMedia = null;
+let selKind = null;
 
 function onEdClick(e) {
+  const editBtn = e.target.closest('.zi-edit');
+  if (editBtn) {
+    e.preventDefault(); e.stopPropagation();
+    openZiModalEdit(editBtn.closest('details.zi'));
+    return;
+  }
+  const xBtn = e.target.closest('.zi-x');
+  if (xBtn) {
+    e.preventDefault(); e.stopPropagation();
+    const det = xBtn.closest('details.zi');
+    confirmBox('Zusatzinfo wirklich entfernen?', () => {
+      det.remove();
+      p_html(ed().innerHTML);
+    });
+    return;
+  }
   let m = e.target.closest('img, iframe');
   if (!m) {
     // iFrames haben pointer-events:none, damit der Klick überhaupt beim Editor ankommt
@@ -755,6 +847,18 @@ function selectMedia(el) {
   deselectMedia();
   selMedia = el;
   el.classList.add('media-sel');
+  const bar = document.getElementById('mediaBar');
+  bar.innerHTML = `
+    <button onclick="setMediaWidth('clamp(160px, 30%, 100%)')">Klein</button>
+    <button onclick="setMediaWidth('clamp(220px, 55%, 100%)')">Mittel</button>
+    <button onclick="setMediaWidth('clamp(280px, 80%, 100%)')">Groß</button>
+    <button onclick="setMediaWidth('100%')">Voll</button>
+    <span class="mb-sep"></span>
+    <button onclick="setMediaAlign('left')" title="Linksbündig">⇤</button>
+    <button onclick="setMediaAlign('center')" title="Mittig">↔</button>
+    <span class="mb-sep"></span>
+    <button class="mb-del" onclick="deleteMedia()">Entfernen</button>
+  `;
   positionMediaUI();
 }
 
@@ -801,6 +905,59 @@ function deleteMedia() {
   if (!selMedia) return;
   const el = selMedia; deselectMedia(); el.remove();
   p_html(ed().innerHTML);
+}
+
+/* ---------- Zusatzinfo festhalten und verschieben (wie bei den Seiten-Reitern) ---------- */
+function onEdPointerDown(e) {
+  if (e.target.closest('.zi-x') || e.target.closest('.zi-edit')) return; // Löschen/Bearbeiten sollen nicht versehentlich Verschieben auslösen
+  const summary = e.target.closest('summary');
+  if (summary && summary.parentElement.classList.contains('zi')) {
+    startZiHold(e, summary.parentElement);
+  }
+}
+
+function startZiHold(e, det) {
+  if (e.button !== undefined && e.button !== 0) return;
+  const startX = e.clientX, startY = e.clientY, pid = e.pointerId;
+  let active = false;
+
+  const activate = () => {
+    active = true;
+    det.classList.add('zi-holding');
+    try { det.setPointerCapture(pid); } catch (_) {}
+  };
+  const holdTimer = setTimeout(activate, 220);
+
+  const onMove = ev => {
+    if (!active) {
+      if (Math.abs(ev.clientX - startX) > 10 || Math.abs(ev.clientY - startY) > 10) finish(false);
+      return;
+    }
+    ev.preventDefault();
+    const container = det.parentElement;
+    const kids = [...container.children].filter(k => k !== det);
+    let target = null;
+    for (const kid of kids) {
+      const r = kid.getBoundingClientRect();
+      if (ev.clientY < r.top + r.height / 2) { target = kid; break; }
+    }
+    if (target) container.insertBefore(det, target);
+    else container.appendChild(det);
+  };
+  const onUp = () => finish(active);
+  function finish(wasActive) {
+    clearTimeout(holdTimer);
+    document.removeEventListener('pointermove', onMove);
+    document.removeEventListener('pointerup', onUp);
+    document.removeEventListener('pointercancel', onUp);
+    if (wasActive) {
+      det.classList.remove('zi-holding');
+      p_html(ed().innerHTML);
+    }
+  }
+  document.addEventListener('pointermove', onMove);
+  document.addEventListener('pointerup', onUp);
+  document.addEventListener('pointercancel', onUp);
 }
 
 // Ecke ziehen, um frei zu skalieren
@@ -855,9 +1012,16 @@ function linkSelection(url) {
 }
 
 /* ---------- Einfügen aus Zwischenablage (KI-Inhalte) ---------- */
-const OK_TAGS = { P:1, BR:1, DIV:1, B:1, STRONG:1, I:1, EM:1, U:1, S:1, H1:1, H2:1, H3:1, H4:1, H5:1, H6:1,
-  UL:1, OL:1, LI:1, A:1, IMG:1, IFRAME:1, BLOCKQUOTE:1, CODE:1, PRE:1, TABLE:1, THEAD:1, TBODY:1, TR:1, TH:1, TD:1, HR:1, SUP:1, SUB:1 };
-const MAP = { H1: 'H2', H5: 'H3', H6: 'H3', DIV: 'P', PRE: 'P' };
+const OK_TAGS = { P:1, BR:1, DIV:1, SPAN:1, B:1, STRONG:1, I:1, EM:1, U:1, S:1, H1:1, H2:1, H3:1, H4:1, H5:1, H6:1,
+  UL:1, OL:1, LI:1, A:1, IMG:1, IFRAME:1, BLOCKQUOTE:1, CODE:1, PRE:1, TABLE:1, THEAD:1, TBODY:1, TR:1, TH:1, TD:1, HR:1, SUP:1, SUB:1, DETAILS:1, SUMMARY:1 };
+const MAP = { H1: 'H2', H5: 'H3', H6: 'H3', PRE: 'P' };
+
+// Grobe Sicherheitsprüfung für style-Werte: keine Skript-Ausführung über CSS möglich machen
+function safeStyle(v) {
+  if (!v) return '';
+  if (/javascript:|expression\(|@import|<|>/i.test(v)) return '';
+  return v;
+}
 
 function clean(html) {
   const d = new DOMParser().parseFromString(html, 'text/html');
@@ -865,14 +1029,19 @@ function clean(html) {
     [...node.childNodes].forEach(c => {
       if (c.nodeType === 1) {
         let tag = c.tagName;
-        if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'META' || tag === 'LINK') return c.remove();
+        if (tag === 'SCRIPT' || tag === 'META' || tag === 'LINK') return c.remove();
+        if (tag === 'STYLE') return c.remove(); // <style>-Blöcke raus, style="..."-Attribute bleiben erlaubt
         if (!OK_TAGS[tag]) { while (c.firstChild) node.insertBefore(c.firstChild, c); return c.remove(); }
         if (MAP[tag]) { const r = d.createElement(MAP[tag]); while (c.firstChild) r.appendChild(c.firstChild); c.replaceWith(r); c = r; tag = r.tagName; }
         [...c.attributes].forEach(a => {
           const nm = a.name.toLowerCase();
-          const keep = (tag === 'A' && nm === 'href') || (tag === 'IMG' && (nm === 'src' || nm === 'alt'))
+          if (nm.startsWith('on')) return c.removeAttribute(a.name); // keine Event-Handler
+          const keep = nm === 'style' || nm === 'contenteditable'
+            || ((tag === 'SPAN' || tag === 'DETAILS' || tag === 'DIV') && nm === 'class')
+            || (tag === 'A' && nm === 'href') || (tag === 'IMG' && (nm === 'src' || nm === 'alt'))
             || (tag === 'IFRAME' && (nm === 'src' || nm === 'allowfullscreen' || nm === 'loading'));
-          if (!keep) c.removeAttribute(a.name);
+          if (!keep) return c.removeAttribute(a.name);
+          if (nm === 'style') { const s = safeStyle(a.value); s ? c.setAttribute('style', s) : c.removeAttribute('style'); }
         });
         if (tag === 'A') { c.target = '_blank'; c.rel = 'noopener'; }
         walk(c);
@@ -963,6 +1132,7 @@ function inline(s) {
 }
 
 function onPaste(e) {
+  const target = e.currentTarget;
   const cd = e.clipboardData;
   // Bild aus der Zwischenablage (z. B. Bildschirmfoto)
   const items = [...(cd.items || [])];
@@ -970,7 +1140,7 @@ function onPaste(e) {
   if (imgItem) {
     e.preventDefault();
     const f = imgItem.getAsFile();
-    if (f) insertImageFile(f);
+    if (f) insertImageFile(f, target);
     return;
   }
   e.preventDefault();
@@ -980,22 +1150,24 @@ function onPaste(e) {
   // Fertiger Einbettungscode als Text eingefügt (PhET, GeoGebra, LearningApps …)
   if (isEmbedCode(txt)) {
     const em = parseEmbed(txt);
-    if (em && em.src) return ins(makeIframe(em.src, em.w, em.h));
-    return ins(clean(txt));
+    if (em && em.src) return ins(makeIframe(em.src, em.w, em.h), target);
+    return ins(clean(txt), target);
   }
   if (bare(txt)) {
-    // Adresse über markiertem Text -> Markierung verlinken
-    const s = window.getSelection();
-    if (s && s.rangeCount && !s.isCollapsed && ed().contains(s.anchorNode)) {
-      lastRange = s.getRangeAt(0).cloneRange();
-      if (linkSelection(txt)) return;
+    // Adresse über markiertem Text -> Markierung verlinken (nur im Haupt-Editor unterstützt)
+    if (target.id === 'ed') {
+      const s = window.getSelection();
+      if (s && s.rangeCount && !s.isCollapsed && ed().contains(s.anchorNode)) {
+        lastRange = s.getRangeAt(0).cloneRange();
+        if (linkSelection(txt)) return;
+      }
     }
-    if (isYt(txt)) return ins(`<iframe src="https://www.youtube-nocookie.com/embed/${ytId(txt)}" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>`);
-    if (isImg(txt)) return ins(`<img src="${attr(txt)}" style="width:100%">`);
-    return ins(makeIframe(txt));
+    if (isYt(txt)) return ins(`<iframe src="https://www.youtube-nocookie.com/embed/${ytId(txt)}" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>`, target);
+    if (isImg(txt)) return ins(`<img src="${attr(txt)}" style="width:100%">`, target);
+    return ins(makeIframe(txt), target);
   }
-  if (html && html.trim()) return ins(clean(html));
-  if (txt) return ins(mdToHtml(txt));
+  if (html && html.trim()) return ins(clean(html), target);
+  if (txt) return ins(mdToHtml(txt), target);
 }
 
 /* ---------- Bilddateien: ziehen, ablegen, einfügen ---------- */
@@ -1034,8 +1206,71 @@ function processImageFile(file, cb) {
   img.src = url;
 }
 
-function insertImageFile(file) {
-  processImageFile(file, dataUrl => ins(`<img src="${dataUrl}">`));
+/* ---------- Aufklappbare Zusatzinfo (z. B. für Differenzierung E-/G-Kurs) ---------- */
+let editingZi = null;
+
+function openZiModal() {
+  editingZi = null;
+  document.getElementById('ziModalTitle').textContent = 'Zusatzinfo einfügen';
+  document.getElementById('ziSubmitBtn').textContent = 'Einfügen';
+  document.getElementById('ziTitle').value = '';
+  document.getElementById('ziBody').innerHTML = '';
+  document.getElementById('ziModal').classList.remove('hide');
+  setTimeout(() => document.getElementById('ziTitle').focus(), 50);
+}
+
+function openZiModalEdit(det) {
+  editingZi = det;
+  document.getElementById('ziModalTitle').textContent = 'Zusatzinfo bearbeiten';
+  document.getElementById('ziSubmitBtn').textContent = 'Speichern';
+  const titleEl = det.querySelector('.zi-title');
+  const bodyDiv = det.querySelector('.zi-body');
+  document.getElementById('ziTitle').value = titleEl ? titleEl.textContent.trim() : '';
+  document.getElementById('ziBody').innerHTML = bodyDiv ? bodyDiv.innerHTML : '';
+  document.getElementById('ziModal').classList.remove('hide');
+  setTimeout(() => document.getElementById('ziTitle').focus(), 50);
+}
+
+function closeZiModal() { document.getElementById('ziModal').classList.add('hide'); editingZi = null; }
+
+function insertZusatzinfo() {
+  const title = document.getElementById('ziTitle').value.trim() || 'Zusatzinfo';
+  const bodyEl = document.getElementById('ziBody');
+  const bodyHtml = bodyEl.innerHTML.trim();
+  const isEmpty = !bodyEl.textContent.trim() && !bodyEl.querySelector('img, iframe');
+  if (isEmpty) { bodyEl.focus(); return toast('Bitte einen Inhalt eingeben.'); }
+
+  if (editingZi) {
+    const det = editingZi;
+    const titleEl = det.querySelector('.zi-title');
+    const bodyDiv = det.querySelector('.zi-body');
+    if (titleEl) titleEl.textContent = title;
+    if (bodyDiv) bodyDiv.innerHTML = bodyHtml;
+    editingZi = null;
+    closeZiModal();
+    p_html(ed().innerHTML);
+    return;
+  }
+
+  closeZiModal();
+  ins(`<details class="zi"><summary><span class="zi-grip" contenteditable="false">⠿</span><span class="zi-title">${esc(title)}</span><span class="zi-edit" contenteditable="false" title="Zusatzinfo bearbeiten">✎</span><span class="zi-x" contenteditable="false" title="Zusatzinfo entfernen">✕</span></summary><div class="zi-body">${bodyHtml}</div></details><p><br></p>`);
+}
+
+/* ---------- Code-Ansicht: HTML einer Seite anzeigen/bearbeiten (z. B. zum Umstyeln per KI) ---------- */
+function prettyHtml(html) {
+  return (html || '').replace(/></g, '>\n<').trim();
+}
+function toggleCodeView() {
+  if (codeMode) {
+    const val = document.getElementById('edCode').value;
+    course.pages[pi].html = clean(val);
+  }
+  codeMode = !codeMode;
+  renderEdit();
+}
+
+function insertImageFile(file, target) {
+  processImageFile(file, dataUrl => ins(`<img src="${dataUrl}">`, target));
 }
 
 // Stichprobe auf durchsichtige Pixel, um zu entscheiden ob PNG erhalten bleiben muss
@@ -1053,14 +1288,14 @@ function hasTransparency(ctx, w, h) {
 function onDragOver(e) {
   e.preventDefault();
   const has = [...(e.dataTransfer.types || [])].includes('Files');
-  if (has) document.getElementById('ed').classList.add('drop');
+  if (has) e.currentTarget.classList.add('drop');
 }
 function onDragLeave(e) {
-  if (!e.currentTarget.contains(e.relatedTarget)) document.getElementById('ed').classList.remove('drop');
+  if (!e.currentTarget.contains(e.relatedTarget)) e.currentTarget.classList.remove('drop');
 }
 function onDrop(e) {
   e.preventDefault();
-  const el = document.getElementById('ed');
+  const el = e.currentTarget;
   el.classList.remove('drop');
   const files = [...(e.dataTransfer.files || [])];
   if (files.length) {
@@ -1068,7 +1303,7 @@ function onDrop(e) {
     // Cursor an die Ablegestelle setzen, falls möglich
     const r = document.caretRangeFromPoint ? document.caretRangeFromPoint(e.clientX, e.clientY) : null;
     if (r) { const s = window.getSelection(); s.removeAllRanges(); s.addRange(r); }
-    files.filter(f => f.type.startsWith('image/')).forEach(insertImageFile);
+    files.filter(f => f.type.startsWith('image/')).forEach(f => insertImageFile(f, el));
     if (!files.some(f => f.type.startsWith('image/'))) toast('Nur Bilddateien können abgelegt werden.');
     return;
   }
@@ -1077,13 +1312,13 @@ function onDrop(e) {
   el.focus();
   if (isEmbedCode(txt)) {
     const em = parseEmbed(txt);
-    if (em && em.src) return ins(makeIframe(em.src, em.w, em.h));
-    return ins(clean(txt));
+    if (em && em.src) return ins(makeIframe(em.src, em.w, em.h), el);
+    return ins(clean(txt), el);
   }
-  if (isYt(txt)) return ins(`<iframe src="https://www.youtube-nocookie.com/embed/${ytId(txt)}" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>`);
-  if (isImg(txt)) return ins(`<img src="${attr(txt)}">`);
-  if (bare(txt)) return ins(`<a href="${attr(txt)}" target="_blank" rel="noopener">${esc(txt)}</a>`);
-  ins(mdToHtml(txt));
+  if (isYt(txt)) return ins(`<iframe src="https://www.youtube-nocookie.com/embed/${ytId(txt)}" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>`, el);
+  if (isImg(txt)) return ins(`<img src="${attr(txt)}">`, el);
+  if (bare(txt)) return ins(`<a href="${attr(txt)}" target="_blank" rel="noopener">${esc(txt)}</a>`, el);
+  ins(mdToHtml(txt), el);
 }
 
 function linkify() {
@@ -1108,6 +1343,8 @@ function linkify() {
 try { document.execCommand('enableObjectResizing', false, true); } catch (e) {}
 
 /* ================= Aufgaben-Editor ================= */
+let clipboardTask = null;
+
 function openTaskModal() {
   showTaskRoot();
   document.getElementById('taskModal').classList.remove('hide');
@@ -1127,6 +1364,24 @@ function showTaskTemplates() {
 }
 function setTask(t) { course.pages[pi].task = newTask(t); closeTaskModal(); renderEdit(); }
 function rmTask() { confirmBox('Aufgabe entfernen?', () => { course.pages[pi].task = null; renderEdit(); }); }
+
+function copyTask() {
+  const t = course.pages[pi].task;
+  if (!t) return;
+  clipboardTask = JSON.parse(JSON.stringify(t));
+  clipboardTask._fromPage = course.pages[pi].title || 'Ohne Titel';
+  toast('Aufgabe kopiert. Auf einer anderen Seite über „Aufgabe zum Weiterkommen" einfügen.');
+}
+function pasteTask() {
+  if (!clipboardTask) return;
+  const copy = JSON.parse(JSON.stringify(clipboardTask));
+  delete copy._fromPage;
+  copy.id = uid('t');
+  course.pages[pi].task = copy;
+  closeTaskModal();
+  renderEdit();
+  toast('Aufgabe eingefügt.');
+}
 
 /* ---------- Aufgabe aus KI übernehmen ---------- */
 const AI_PROMPT = `Erzeuge eine Aufgabe für eine digitale Lektion. Antworte AUSSCHLIESSLICH mit einem JSON-Objekt, ohne Erklärung, ohne Code-Block.
@@ -1310,7 +1565,7 @@ function taskEditor(t) {
   }
   if (t.type === 'dragdrop') {
     body = `<label class="fld">Begriff und passende Definition (auch als Bild möglich)</label>` +
-      t.pairs.map((p, i) => `<div class="row pair-row">
+      t.pairs.map((p, i) => `<div class="row pair-row" ondragover="onRowDragOver(event)" ondragleave="onRowDragLeave(event)" ondrop="onRowDrop(event, ${i})">
         ${pairSideEditor(p.term, 'term', i)}
         ${pairSideEditor(p.def, 'def', i)}
         <button class="rm" onclick="rmPair(${i})">✕</button></div>`).join('') +
@@ -1329,6 +1584,7 @@ function taskEditor(t) {
       `<button class="add-row" onclick="addItem()">+ Schritt</button>`;
   }
   box.innerHTML = `<div class="task-head"><span class="task-type">${TN[t.type]}</span>
+    <button class="task-remove" onclick="copyTask()">Kopieren</button>
     <button class="task-remove" onclick="rmTask()">Entfernen</button></div>${body}`;
   return box;
 }
@@ -1372,6 +1628,20 @@ function onPairDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('
 function onPairDragLeave(e) { e.currentTarget.classList.remove('drop'); }
 function onPairDrop(e, i, side) {
   e.preventDefault(); e.currentTarget.classList.remove('drop');
+  dropImageOnPair(e, i, side);
+}
+
+// Auffangnetz für die ganze Zeile: trifft automatisch das nähere Feld (links = Begriff, rechts = Definition)
+function onRowDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('row-drop'); }
+function onRowDragLeave(e) { e.currentTarget.classList.remove('row-drop'); }
+function onRowDrop(e, i) {
+  e.preventDefault(); e.currentTarget.classList.remove('row-drop');
+  const r = e.currentTarget.getBoundingClientRect();
+  const side = (e.clientX - r.left) < r.width / 2 ? 'term' : 'def';
+  dropImageOnPair(e, i, side);
+}
+
+function dropImageOnPair(e, i, side) {
   const files = [...(e.dataTransfer.files || [])].filter(f => f.type.startsWith('image/'));
   if (files.length) return setPairImage(i, side, files[0]);
   const txt = (e.dataTransfer.getData('text/uri-list') || e.dataTransfer.getData('text/plain') || '').trim();
@@ -1738,7 +2008,7 @@ function applyCourse(d) {
     task: normTask(p.task || p.gate)
   })) };
   if (!course.pages.length) course.pages = [newPage()];
-  pi = 0;
+  pi = 0; codeMode = false;
   document.getElementById('courseTitle').value = course.title;
   setMode('edit');
 }
@@ -1803,6 +2073,11 @@ renderPlay();
 }
 
 /* ================= Start ================= */
+// Sicherheitsnetz: verhindert, dass ein Ablegen an einer nicht vorgesehenen Stelle
+// die Datei als neue Seite/Vollbild öffnet — greift nur, wenn kein spezifisches Ziel schon reagiert hat
+document.addEventListener('dragover', e => { if (!e.defaultPrevented) e.preventDefault(); });
+document.addEventListener('drop', e => { if (!e.defaultPrevented) e.preventDefault(); });
+
 if (document.getElementById('tabs')) renderEdit();
 </script>
 </body>
