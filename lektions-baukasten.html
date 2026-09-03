@@ -86,6 +86,8 @@
     font-size: 1.1rem; line-height: 1; cursor: pointer;
   }
   .tab-add:hover { border-color: var(--accent); color: var(--accent); }
+  .tab-end { border-style: dashed; }
+  .tab-end.active { border-style: solid; }
 
   /* ---------- Arbeitsfläche ---------- */
   main { max-width: 46rem; margin: 0 auto; padding: 1.2rem 1rem 8rem; }
@@ -192,6 +194,13 @@
   .zi-btn:hover { background: var(--accent); color: #fff; }
   .code-btn { border: 1px dashed var(--muted); background: var(--bg); color: var(--muted); }
   .code-btn:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .hist-btn {
+    width: 2.1rem; height: 2.1rem; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--panel); color: var(--muted); font-size: 1rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-family: inherit; line-height: 1;
+  }
+  .hist-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .hist-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
   .code-view {
     width: 100%; min-height: 40vh; border: none; background: #1c1f24; color: #d8dee9;
@@ -603,7 +612,80 @@ const newTask = t => ({
 const newPage = () => ({ id: uid('p'), title: '', html: '', task: null });
 
 let course = { title: 'Meine Lernstrecke', pages: [newPage()] };
-let mode = 'edit', pi = 0, playIdx = 0, solved = {}, wrongTries = {}, codeMode = false;
+let mode = 'edit', pi = 0, playIdx = 0, solved = {}, wrongTries = {}, codeMode = false, editingEnd = false;
+
+/* ---------- Rückgängig / Wiederholen (pro Seite) ---------- */
+let editHistory = {};           // pageId -> { stack: [html, ...], idx }
+let histTimer = null;
+let histFlushNow = false;
+const HIST_DEBOUNCE = 500;      // Pause beim Tippen, nach der ein Schritt gespeichert wird
+const HIST_MAX = 60;            // Schritte pro Seite
+
+function ensureHist(p) {
+  if (!editHistory[p.id]) editHistory[p.id] = { stack: [p.html || ''], idx: 0 };
+}
+function pushHist(pid, html) {
+  const h = editHistory[pid] || (editHistory[pid] = { stack: [''], idx: 0 });
+  if (h.stack[h.idx] === html) return;
+  h.stack = h.stack.slice(0, h.idx + 1);
+  h.stack.push(html);
+  if (h.stack.length > HIST_MAX) h.stack.shift();
+  h.idx = h.stack.length - 1;
+  updateUndoRedoUI();
+}
+// Vor einer konkreten Aktion (Einfügen, Löschen, Größe ändern …) aufrufen:
+// sichert den bisherigen Stand und sorgt dafür, dass der nächste p_html-Aufruf
+// sofort (statt verzögert) als eigener Schritt gespeichert wird.
+function histCheckpoint() {
+  const p = course.pages[pi]; if (!p) return;
+  clearTimeout(histTimer);
+  pushHist(p.id, p.html);
+  histFlushNow = true;
+}
+function updateUndoRedoUI() {
+  const p = course.pages[pi]; if (!p) return;
+  const h = editHistory[p.id];
+  const u = document.getElementById('btnUndo'), r = document.getElementById('btnRedo');
+  if (u) u.disabled = !(h && h.idx > 0);
+  if (r) r.disabled = !(h && h.idx < h.stack.length - 1);
+}
+function applyHistState(p, html) {
+  p.html = html;
+  deselectMedia();
+  if (codeMode) {
+    const ta = document.getElementById('edCode');
+    if (ta) ta.value = prettyHtml(html);
+  } else {
+    const e = document.getElementById('ed');
+    if (e) e.innerHTML = html;
+  }
+  updateUndoRedoUI();
+}
+function undoEdit() {
+  const p = course.pages[pi]; if (!p) return;
+  ensureHist(p);
+  const h = editHistory[p.id];
+  if (h.idx <= 0) return;
+  clearTimeout(histTimer); histFlushNow = false;
+  h.idx--;
+  applyHistState(p, h.stack[h.idx]);
+}
+function redoEdit() {
+  const p = course.pages[pi]; if (!p) return;
+  ensureHist(p);
+  const h = editHistory[p.id];
+  if (h.idx >= h.stack.length - 1) return;
+  clearTimeout(histTimer); histFlushNow = false;
+  h.idx++;
+  applyHistState(p, h.stack[h.idx]);
+}
+function onEdKeydown(e) {
+  const mod = e.ctrlKey || e.metaKey;
+  if (!mod) return;
+  const k = e.key.toLowerCase();
+  if (k === 'z' && !e.shiftKey) { e.preventDefault(); undoEdit(); }
+  else if (k === 'y' || (k === 'z' && e.shiftKey)) { e.preventDefault(); redoEdit(); }
+}
 
 /* ================= Modus ================= */
 function setMode(m) {
@@ -634,17 +716,28 @@ function renderTabs() {
     const wrap = document.createElement('span');
     wrap.className = 'tab-wrap';
     const b = document.createElement('button');
-    b.className = 'tab' + (i === pi ? ' active' : '');
+    b.className = 'tab' + (!editingEnd && i === pi ? ' active' : '');
     b.innerHTML = (p.title ? esc(p.title.slice(0, 22)) : '<span style="opacity:.5">Ohne Titel</span>') + (p.task ? '<span class="dot"></span>' : '');
-    b.onclick = () => { if (suppressTabClick) { suppressTabClick = false; return; } pi = i; codeMode = false; renderEdit(); };
+    b.onclick = () => { if (suppressTabClick) { suppressTabClick = false; return; } pi = i; editingEnd = false; codeMode = false; renderEdit(); };
     b.onpointerdown = e => startTabHold(e, i, b);
     wrap.appendChild(b);
     el.appendChild(wrap);
   });
   const add = document.createElement('button');
   add.className = 'tab-add'; add.textContent = '+'; add.title = 'Seite hinzufügen';
-  add.onclick = () => { course.pages.push(newPage()); pi = course.pages.length - 1; codeMode = false; renderEdit(); window.scrollTo({ top: 0 }); };
+  add.onclick = () => { course.pages.push(newPage()); pi = course.pages.length - 1; editingEnd = false; codeMode = false; renderEdit(); window.scrollTo({ top: 0 }); };
   el.appendChild(add);
+
+  // Fest verankerter Reiter für den Lektionsabschluss — nicht verschiebbar, nicht löschbar
+  const endWrap = document.createElement('span');
+  endWrap.className = 'tab-wrap';
+  const endBtn = document.createElement('button');
+  endBtn.className = 'tab tab-end' + (editingEnd ? ' active' : '');
+  endBtn.innerHTML = 'Ende' + ((course.summaryText || '').trim() ? '<span class="dot"></span>' : '');
+  endBtn.title = 'Abschluss & Auswertung der Lektion';
+  endBtn.onclick = () => { editingEnd = true; codeMode = false; renderEdit(); window.scrollTo({ top: 0 }); };
+  endWrap.appendChild(endBtn);
+  el.appendChild(endWrap);
 }
 
 // Reiter festhalten (kurze Verzögerung), danach mit dem Finger/der Maus verschieben
@@ -702,7 +795,11 @@ function startTabHold(e, idx, el) {
 
 function renderEdit() {
   renderTabs();
+  if (editingEnd) return renderEndEdit();
   const p = course.pages[pi];
+  ensureHist(p);
+  const h = editHistory[p.id];
+  const canUndo = h.idx > 0, canRedo = h.idx < h.stack.length - 1;
   const w = document.getElementById('edit');
   w.innerHTML = `
     <input class="page-name" id="pgName" value="${attr(p.title)}" placeholder="Seitentitel" oninput="setTitle(this.value)">
@@ -713,10 +810,12 @@ function renderEdit() {
         <div class="editor" id="ed" contenteditable="true"
              data-ph="Schreib los. Text einfügen, Bilder ziehen, Links und Einbettungscode einfach reinkopieren — wird automatisch erkannt."
              oninput="p_html(this.innerHTML)" onpaste="onPaste(event)" onblur="linkify()"
-             onclick="onEdClick(event)" onpointerdown="onEdPointerDown(event)"
+             onclick="onEdClick(event)" onpointerdown="onEdPointerDown(event)" onkeydown="onEdKeydown(event)"
              ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">${p.html}</div>
       `}
       <div class="canvas-tools">
+        <button class="hist-btn" id="btnUndo" onclick="undoEdit()" ${canUndo ? '' : 'disabled'} title="Rückgängig (Strg+Z)">↶</button>
+        <button class="hist-btn" id="btnRedo" onclick="redoEdit()" ${canRedo ? '' : 'disabled'} title="Wiederholen (Strg+Umschalt+Z)">↷</button>
         ${codeMode ? '' : '<button class="zi-btn" onclick="openZiModal()" title="Aufklappbare Zusatzinfo einfügen (z. B. für den E-Kurs)">+ Zusatzinfo</button>'}
         <button class="code-btn" onclick="toggleCodeView()" title="${codeMode ? 'Zurück zur normalen Ansicht' : 'HTML-Code anzeigen, z. B. um ihn einer KI zum Umstyeln zu geben'}">${codeMode ? '✓ Fertig' : '</> Code'}</button>
       </div>
@@ -733,12 +832,6 @@ function renderEdit() {
         </div>`}
       <div id="taskEd"></div>
     </div>
-    ${pi === course.pages.length - 1 ? `
-      <div class="footer-zone">
-        <div class="footer-label">Auswertung nach der Lektion (automatisch)</div>
-        <p class="hint" style="margin-top:-0.2rem;margin-bottom:0.5rem;">Nach dieser Seite sehen Schüler automatisch eine Auswertung mit Punktzahl. Optional kannst du hier noch die wichtigsten Punkte der Lektion ergänzen.</p>
-        <textarea placeholder="z. B. Wichtig war heute: Kraft wird in Newton gemessen, es gibt vier Grundkräfte …" oninput="course.summaryText=this.value">${esc(course.summaryText || '')}</textarea>
-      </div>` : ''}
     <div class="page-tools">
       <button onclick="delPage()">Seite löschen</button>
     </div>
@@ -746,8 +839,30 @@ function renderEdit() {
   if (p.task) document.getElementById('taskEd').appendChild(taskEditor(p.task));
 }
 
+// Fester Abschluss-Reiter: erscheint automatisch nach der letzten Seite und zeigt die Auswertung
+function renderEndEdit() {
+  const w = document.getElementById('edit');
+  const totalTasks = course.pages.filter(p => p.task).length;
+  w.innerHTML = `
+    <div class="page-name">Ende der Lektion</div>
+    <div class="canvas" style="min-height:auto;padding-bottom:1.1rem;">
+      <p class="hint" style="margin-top:0;">Dieser Reiter steht immer am Ende und lässt sich nicht verschieben oder löschen. Nach der letzten Seite sehen Schüler automatisch diese Auswertung mit Punktzahl${totalTasks ? ` (${totalTasks} Aufgabe${totalTasks === 1 ? '' : 'n'} in dieser Lektion)` : ''}.</p>
+      <div class="footer-zone" style="margin-top:0.3rem;">
+        <div class="footer-label">Abschlusstext (optional)</div>
+        <textarea placeholder="z. B. Wichtig war heute: Kraft wird in Newton gemessen, es gibt vier Grundkräfte …" oninput="course.summaryText=this.value">${esc(course.summaryText || '')}</textarea>
+      </div>
+    </div>
+  `;
+}
+
 const setTitle = v => { course.pages[pi].title = v; renderTabs(); };
-const p_html = v => { course.pages[pi].html = v; };
+const p_html = v => {
+  course.pages[pi].html = v;
+  const pid = course.pages[pi].id;
+  clearTimeout(histTimer);
+  if (histFlushNow) { histFlushNow = false; pushHist(pid, v); }
+  else histTimer = setTimeout(() => pushHist(pid, v), HIST_DEBOUNCE);
+};
 
 /* ================= Eigene Dialoge (Browser-Dialoge werden in Vorschauen blockiert) ================= */
 function ask(title, placeholder, preset, cb) {
@@ -789,7 +904,9 @@ function toast(msg) {
 function delPage() {
   if (course.pages.length < 2) return toast('Es muss mindestens eine Seite geben.');
   confirmBox('Diese Seite wirklich löschen?', () => {
-    course.pages.splice(pi, 1); pi = Math.max(0, pi - 1); codeMode = false; renderEdit();
+    const [removed] = course.pages.splice(pi, 1);
+    delete editHistory[removed.id];
+    pi = Math.max(0, pi - 1); codeMode = false; renderEdit();
   });
 }
 
@@ -798,6 +915,7 @@ const ed = () => document.getElementById('ed');
 
 function ins(html, target) {
   const e = target || ed(); if (!e) return;
+  if (e.id === 'ed') histCheckpoint();
   e.focus();
   const sel = window.getSelection();
   const inside = sel && sel.rangeCount && e.contains(sel.anchorNode);
@@ -827,6 +945,7 @@ function onEdClick(e) {
     e.preventDefault(); e.stopPropagation();
     const det = xBtn.closest('details.zi');
     confirmBox('Zusatzinfo wirklich entfernen?', () => {
+      histCheckpoint();
       det.remove();
       p_html(ed().innerHTML);
     });
@@ -887,6 +1006,7 @@ function positionMediaUI() {
 
 function setMediaWidth(w) {
   if (!selMedia) return;
+  histCheckpoint();
   selMedia.style.width = w;
   selMedia.style.height = 'auto';
   p_html(ed().innerHTML);
@@ -895,6 +1015,7 @@ function setMediaWidth(w) {
 
 function setMediaAlign(a) {
   if (!selMedia) return;
+  histCheckpoint();
   selMedia.style.display = 'block';
   selMedia.style.marginLeft = a === 'center' ? 'auto' : '0';
   selMedia.style.marginRight = a === 'center' ? 'auto' : 'auto';
@@ -905,6 +1026,7 @@ function setMediaAlign(a) {
 
 function deleteMedia() {
   if (!selMedia) return;
+  histCheckpoint();
   const el = selMedia; deselectMedia(); el.remove();
   p_html(ed().innerHTML);
 }
@@ -925,6 +1047,7 @@ function startZiHold(e, det) {
 
   const activate = () => {
     active = true;
+    histCheckpoint();
     det.classList.add('zi-holding');
     try { det.setPointerCapture(pid); } catch (_) {}
   };
@@ -970,6 +1093,7 @@ function startZiHold(e, det) {
   h.addEventListener('pointerdown', e => {
     if (!selMedia) return;
     e.preventDefault();
+    histCheckpoint();
     h.setPointerCapture(e.pointerId);
     start = { x: e.clientX, w: selMedia.getBoundingClientRect().width, max: ed().clientWidth };
   });
@@ -1003,6 +1127,7 @@ document.addEventListener('selectionchange', () => {
 function linkSelection(url) {
   const e = ed();
   if (!e || !lastRange || lastRange.collapsed) return false;
+  histCheckpoint();
   e.focus();
   const s = window.getSelection(); s.removeAllRanges(); s.addRange(lastRange);
   document.execCommand('createLink', false, url);
@@ -1244,6 +1369,7 @@ function insertZusatzinfo() {
 
   if (editingZi) {
     const det = editingZi;
+    histCheckpoint();
     const titleEl = det.querySelector('.zi-title');
     const bodyDiv = det.querySelector('.zi-body');
     if (titleEl) titleEl.textContent = title;
@@ -1264,8 +1390,9 @@ function prettyHtml(html) {
 }
 function toggleCodeView() {
   if (codeMode) {
+    histCheckpoint();
     const val = document.getElementById('edCode').value;
-    course.pages[pi].html = clean(val);
+    p_html(clean(val));
   }
   codeMode = !codeMode;
   renderEdit();
@@ -2017,7 +2144,8 @@ function applyCourse(d) {
     task: normTask(p.task || p.gate)
   })) };
   if (!course.pages.length) course.pages = [newPage()];
-  pi = 0; codeMode = false;
+  pi = 0; codeMode = false; editingEnd = false;
+  editHistory = {}; clearTimeout(histTimer); histFlushNow = false;
   document.getElementById('courseTitle').value = course.title;
   setMode('edit');
 }
