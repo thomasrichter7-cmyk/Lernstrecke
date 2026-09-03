@@ -611,7 +611,7 @@ const newTask = t => ({
 
 const newPage = () => ({ id: uid('p'), title: '', html: '', task: null });
 
-let course = { title: 'Meine Lernstrecke', pages: [newPage()] };
+let course = { title: 'Meine Lernstrecke', endHtml: '', pages: [newPage()] };
 let mode = 'edit', pi = 0, playIdx = 0, solved = {}, wrongTries = {}, codeMode = false, editingEnd = false;
 
 /* ---------- Rückgängig / Wiederholen (pro Seite) ---------- */
@@ -633,17 +633,27 @@ function pushHist(pid, html) {
   h.idx = h.stack.length - 1;
   updateUndoRedoUI();
 }
+// Liefert die Seite, die gerade im Inhaltsfeld bearbeitet wird — eine echte Seite
+// oder die virtuelle "Ende"-Seite (ihr Inhalt liegt in course.endHtml).
+function curPage() {
+  if (editingEnd) return { id: '__end__', get html() { return course.endHtml || ''; }, set html(v) { course.endHtml = v; } };
+  return course.pages[pi];
+}
+function hasEndContent() {
+  const raw = course.endHtml || '';
+  return !!raw.replace(/<[^>]*>/g, '').trim() || /<img\b|<iframe\b/i.test(raw);
+}
 // Vor einer konkreten Aktion (Einfügen, Löschen, Größe ändern …) aufrufen:
 // sichert den bisherigen Stand und sorgt dafür, dass der nächste p_html-Aufruf
 // sofort (statt verzögert) als eigener Schritt gespeichert wird.
 function histCheckpoint() {
-  const p = course.pages[pi]; if (!p) return;
+  const p = curPage(); if (!p) return;
   clearTimeout(histTimer);
   pushHist(p.id, p.html);
   histFlushNow = true;
 }
 function updateUndoRedoUI() {
-  const p = course.pages[pi]; if (!p) return;
+  const p = curPage(); if (!p) return;
   const h = editHistory[p.id];
   const u = document.getElementById('btnUndo'), r = document.getElementById('btnRedo');
   if (u) u.disabled = !(h && h.idx > 0);
@@ -662,7 +672,7 @@ function applyHistState(p, html) {
   updateUndoRedoUI();
 }
 function undoEdit() {
-  const p = course.pages[pi]; if (!p) return;
+  const p = curPage(); if (!p) return;
   ensureHist(p);
   const h = editHistory[p.id];
   if (h.idx <= 0) return;
@@ -671,7 +681,7 @@ function undoEdit() {
   applyHistState(p, h.stack[h.idx]);
 }
 function redoEdit() {
-  const p = course.pages[pi]; if (!p) return;
+  const p = curPage(); if (!p) return;
   ensureHist(p);
   const h = editHistory[p.id];
   if (h.idx >= h.stack.length - 1) return;
@@ -733,7 +743,7 @@ function renderTabs() {
   endWrap.className = 'tab-wrap';
   const endBtn = document.createElement('button');
   endBtn.className = 'tab tab-end' + (editingEnd ? ' active' : '');
-  endBtn.innerHTML = 'Ende' + ((course.summaryText || '').trim() ? '<span class="dot"></span>' : '');
+  endBtn.innerHTML = 'Ende' + (hasEndContent() ? '<span class="dot"></span>' : '');
   endBtn.title = 'Abschluss & Auswertung der Lektion';
   endBtn.onclick = () => { editingEnd = true; codeMode = false; renderEdit(); window.scrollTo({ top: 0 }); };
   endWrap.appendChild(endBtn);
@@ -795,20 +805,25 @@ function startTabHold(e, idx, el) {
 
 function renderEdit() {
   renderTabs();
-  if (editingEnd) return renderEndEdit();
-  const p = course.pages[pi];
+  const p = curPage();
   ensureHist(p);
   const h = editHistory[p.id];
   const canUndo = h.idx > 0, canRedo = h.idx < h.stack.length - 1;
   const w = document.getElementById('edit');
+  const totalTasks = course.pages.filter(pg => pg.task).length;
   w.innerHTML = `
-    <input class="page-name" id="pgName" value="${attr(p.title)}" placeholder="Seitentitel" oninput="setTitle(this.value)">
+    ${editingEnd ? `
+      <div class="page-name">Ende der Lektion</div>
+      <p class="hint" style="margin-top:-0.6rem;margin-bottom:0.8rem;">Dieser Reiter steht immer am Ende und lässt sich nicht verschieben oder löschen. Schüler sehen diesen Inhalt automatisch nach der letzten Seite, direkt gefolgt von der Punktzahl-Auswertung${totalTasks ? ` (${totalTasks} Aufgabe${totalTasks === 1 ? '' : 'n'} in dieser Lektion)` : ''}.</p>
+    ` : `
+      <input class="page-name" id="pgName" value="${attr(p.title)}" placeholder="Seitentitel" oninput="setTitle(this.value)">
+    `}
     <div class="canvas">
       ${codeMode ? `
         <textarea id="edCode" class="code-view" spellcheck="false" oninput="p_html(this.value)">${esc(prettyHtml(p.html))}</textarea>
       ` : `
         <div class="editor" id="ed" contenteditable="true"
-             data-ph="Schreib los. Text einfügen, Bilder ziehen, Links und Einbettungscode einfach reinkopieren — wird automatisch erkannt."
+             data-ph="${editingEnd ? 'Abschluss frei gestalten — Text schreiben, Bilder ziehen, Links und Einbettungscode einfach reinkopieren.' : 'Schreib los. Text einfügen, Bilder ziehen, Links und Einbettungscode einfach reinkopieren — wird automatisch erkannt.'}"
              oninput="p_html(this.innerHTML)" onpaste="onPaste(event)" onblur="linkify()"
              onclick="onEdClick(event)" onpointerdown="onEdPointerDown(event)" onkeydown="onEdKeydown(event)"
              ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">${p.html}</div>
@@ -822,6 +837,7 @@ function renderEdit() {
       <div class="media-bar hide" id="mediaBar"></div>
       <div class="res-handle hide" id="resHandle"></div>
     </div>
+    ${editingEnd ? '' : `
     <div class="footer-zone">
       <div class="footer-label">Am Ende der Seite</div>
       ${p.task ? '' : `
@@ -834,31 +850,16 @@ function renderEdit() {
     </div>
     <div class="page-tools">
       <button onclick="delPage()">Seite löschen</button>
-    </div>
+    </div>`}
   `;
-  if (p.task) document.getElementById('taskEd').appendChild(taskEditor(p.task));
-}
-
-// Fester Abschluss-Reiter: erscheint automatisch nach der letzten Seite und zeigt die Auswertung
-function renderEndEdit() {
-  const w = document.getElementById('edit');
-  const totalTasks = course.pages.filter(p => p.task).length;
-  w.innerHTML = `
-    <div class="page-name">Ende der Lektion</div>
-    <div class="canvas" style="min-height:auto;padding-bottom:1.1rem;">
-      <p class="hint" style="margin-top:0;">Dieser Reiter steht immer am Ende und lässt sich nicht verschieben oder löschen. Nach der letzten Seite sehen Schüler automatisch diese Auswertung mit Punktzahl${totalTasks ? ` (${totalTasks} Aufgabe${totalTasks === 1 ? '' : 'n'} in dieser Lektion)` : ''}.</p>
-      <div class="footer-zone" style="margin-top:0.3rem;">
-        <div class="footer-label">Abschlusstext (optional)</div>
-        <textarea placeholder="z. B. Wichtig war heute: Kraft wird in Newton gemessen, es gibt vier Grundkräfte …" oninput="course.summaryText=this.value">${esc(course.summaryText || '')}</textarea>
-      </div>
-    </div>
-  `;
+  if (!editingEnd && p.task) document.getElementById('taskEd').appendChild(taskEditor(p.task));
 }
 
 const setTitle = v => { course.pages[pi].title = v; renderTabs(); };
 const p_html = v => {
-  course.pages[pi].html = v;
-  const pid = course.pages[pi].id;
+  const cp = curPage();
+  cp.html = v;
+  const pid = cp.id;
   clearTimeout(histTimer);
   if (histFlushNow) { histFlushNow = false; pushHist(pid, v); }
   else histTimer = setTimeout(() => pushHist(pid, v), HIST_DEBOUNCE);
@@ -1849,7 +1850,7 @@ function renderSummary() {
   w.innerHTML = `
     <div class="sheet">
       <h1>Auswertung</h1>
-      ${course.summaryText ? `<div class="article"><p>${esc(course.summaryText).replace(/\n/g, '<br>')}</p></div>` : ''}
+      ${course.endHtml ? `<div class="article">${course.endHtml}</div>` : ''}
       <div class="score-box">
         ${total > 0 ? `
           <div class="score-row"><span>Aufgaben bearbeitet</span><strong>${total}</strong></div>
@@ -2138,7 +2139,9 @@ function normTask(t) {
 }
 
 function applyCourse(d) {
-  course = { title: d.title || 'Lernstrecke', summaryText: d.summaryText || '', pages: (d.pages || []).map(p => ({
+  const endHtml = d.endHtml !== undefined ? d.endHtml
+    : (d.summaryText ? `<p>${esc(d.summaryText).replace(/\n/g, '<br>')}</p>` : '');
+  course = { title: d.title || 'Lernstrecke', endHtml, pages: (d.pages || []).map(p => ({
     id: p.id || uid('p'), title: p.title || '',
     html: p.html !== undefined ? p.html : (p.blocks ? p.blocks.map(b => b.html || '').join('') : ''),
     task: normTask(p.task || p.gate)
