@@ -350,6 +350,7 @@
   .chip {
     padding: 0.65rem 0.85rem; margin-bottom: 0.45rem; background: var(--bg);
     border: 1px solid var(--line); border-radius: 8px; font-size: 0.94rem; cursor: pointer;
+    overflow-wrap: anywhere;
   }
   .chip.sel { border-color: var(--ink); background: var(--ink); color: #fff; }
   .chip.used { opacity: 0.35; }
@@ -357,6 +358,7 @@
   .slot {
     padding: 0.65rem 0.85rem; margin-bottom: 0.45rem; min-height: 3.4rem;
     border: 1px dashed var(--line); border-radius: 8px; background: var(--bg); font-size: 0.9rem; cursor: pointer;
+    overflow-wrap: anywhere;
   }
   .slot .d { color: var(--muted); font-size: 0.88rem; }
   .slot .d img, .slot .a img { max-width: 100%; max-height: 7rem; height: auto; display: block; margin: 0.2rem auto; border-radius: 4px; }
@@ -617,7 +619,7 @@ function setMode(m) {
   document.getElementById('tbSep').style.display = m === 'play' ? 'none' : '';
   document.getElementById('btnOpenFile').style.display = m === 'play' ? 'none' : '';
   document.getElementById('btnSaveLesson').style.display = m === 'play' ? 'none' : '';
-  if (m === 'play') { playIdx = 0; solved = {}; wrongTries = {}; renderPlay(); }
+  if (m === 'play') { playIdx = pi; solved = {}; wrongTries = {}; renderPlay(); }
   else renderEdit();
 }
 
@@ -1596,19 +1598,26 @@ const addPair = () => { T().pairs.push({ term: '', def: '' }); renderEdit(); };
 const rmPair = i => { const t = T(); if (t.pairs.length <= 2) return toast('Mindestens zwei Paare nötig.'); t.pairs.splice(i, 1); renderEdit(); };
 
 /* ---------- Bild oder Text bei Zuordnen-Paaren ---------- */
-const isImgVal = v => /^data:image\//.test(v || '') || isImg(v || '');
+const isImgVal = v => /^data:image\//i.test((v || '').trim()) || isImg((v || '').trim());
 
 function pairSideEditor(value, side, i) {
   if (isImgVal(value)) {
     return `<div class="pair-side pair-side-img">
-      <img src="${attr(value)}">
+      <img src="${attr(value.trim())}">
       <button class="pair-img-rm" onclick="clearPairImage(${i}, '${side}')" title="Bild entfernen">✕</button>
     </div>`;
   }
   return `<div class="pair-side" ondragover="onPairDragOver(event)" ondragleave="onPairDragLeave(event)" ondrop="onPairDrop(event, ${i}, '${side}')">
     <input type="text" value="${attr(value)}" placeholder="${side === 'term' ? 'Begriff' : 'Definition'}"
-      oninput="T().pairs[${i}].${side}=this.value" onpaste="onPairPaste(event, ${i}, '${side}')">
+      oninput="onPairTextInput(${i}, '${side}', this.value)" onpaste="onPairPaste(event, ${i}, '${side}')">
   </div>`;
+}
+
+// Falls statt eines Bildes eine Bild-Adresse (data:image/... oder Bild-Link) als Text getippt
+// oder eingefügt wurde (z. B. über „Bildadresse kopieren"), sofort als Bild anzeigen.
+function onPairTextInput(i, side, value) {
+  T().pairs[i][side] = value;
+  if (isImgVal(value)) renderEdit();
 }
 
 function setPairImage(i, side, file) {
@@ -1865,7 +1874,7 @@ function renderTask(page, host) {
       terms.forEach(tm => {
         const c = document.createElement('div');
         c.className = 'chip' + (sel === tm.i ? ' sel' : '') + (Object.values(put).includes(tm.i) ? ' used' : '');
-        c.innerHTML = isImgVal(tm.text) ? `<img src="${attr(tm.text)}">` : esc(tm.text);
+        c.innerHTML = isImgVal(tm.text) ? `<img src="${attr(tm.text.trim())}">` : esc(tm.text);
         if (!was) c.onclick = () => { sel = sel === tm.i ? null : tm.i; draw(); };
         cw.appendChild(c);
       });
@@ -1873,8 +1882,8 @@ function renderTask(page, host) {
         const s = document.createElement('div');
         s.className = 'slot' + (was ? ' ok' : '');
         const cur = put[si] != null ? t.pairs[put[si]].term : '';
-        const defHtml = isImgVal(p.def) ? `<img src="${attr(p.def)}">` : esc(p.def);
-        const curHtml = cur ? (isImgVal(cur) ? `<img src="${attr(cur)}">` : esc(cur)) : '';
+        const defHtml = isImgVal(p.def) ? `<img src="${attr(p.def.trim())}">` : esc(p.def);
+        const curHtml = cur ? (isImgVal(cur) ? `<img src="${attr(cur.trim())}">` : esc(cur)) : '';
         s.innerHTML = `<div class="d">${defHtml}</div>${curHtml ? `<div class="a">${curHtml}</div>` : ''}`;
         if (!was) s.onclick = () => {
           if (sel != null) { Object.keys(put).forEach(k => { if (put[k] === sel) delete put[k]; }); put[si] = sel; sel = null; }
