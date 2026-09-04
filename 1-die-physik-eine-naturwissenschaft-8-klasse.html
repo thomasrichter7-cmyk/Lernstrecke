@@ -1,0 +1,2150 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>1. Die Physik – eine Naturwissenschaft (8. Klasse)</title>
+<style>
+  :root {
+    --ink: #16181d;
+    --muted: #6b7280;
+    --faint: #9ca3af;
+    --line: #e5e7eb;
+    --bg: #fbfbfa;
+    --panel: #ffffff;
+    --accent: #2f5d50;
+    --accent-soft: #eef4f1;
+    --warn: #a3432f;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 17px; line-height: 1.6;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* ---------- Kopfzeile ---------- */
+  .topbar {
+    position: sticky; top: 0; z-index: 30;
+    background: rgba(251,251,250,0.92); backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+    padding: env(safe-area-inset-top) 0 0;
+  }
+  .topbar-inner {
+    max-width: 46rem; margin: 0 auto; padding: 0.7rem 1rem;
+    display: flex; align-items: center; gap: 0.6rem;
+  }
+  .course-title {
+    flex: 1; min-width: 0; font-size: 0.95rem; font-weight: 600;
+    border: none; background: none; color: var(--ink); padding: 0.2rem 0;
+    font-family: inherit;
+  }
+  .course-title:focus { outline: none; }
+  .topbar-actions { display: flex; gap: 0.3rem; flex-shrink: 0; }
+  .icon-btn {
+    width: 2.2rem; height: 2.2rem; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--panel); color: var(--muted); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 0.95rem;
+  }
+  .icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .icon-btn.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .icon-btn.wide, .topbar-actions .icon-btn:not(#btnEdit):not(#btnPlay) {
+    width: auto; padding: 0 0.7rem; font-size: 0.82rem; white-space: nowrap;
+  }
+  .icon-btn.wide { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .icon-btn.wide:hover { background: #24493f; color: #fff; }
+  .tb-sep { width: 1px; height: 1.4rem; background: var(--line); margin: 0 0.15rem; flex-shrink: 0; }
+  @media (max-width: 30rem) {
+    .topbar-inner { flex-wrap: wrap; }
+    .course-title { flex: 1 0 100%; margin-bottom: 0.3rem; }
+    .topbar-actions { width: 100%; }
+  }
+
+  /* ---------- Seitenreiter ---------- */
+  .page-tabs {
+    display: flex; gap: 0.35rem; overflow-x: auto; padding: 0.5rem 1rem 0.7rem;
+    max-width: 46rem; margin: 0 auto;
+    scrollbar-width: none; -ms-overflow-style: none;
+  }
+  .page-tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    flex-shrink: 0; padding: 0.4rem 0.85rem; border-radius: 100px;
+    border: 1px solid var(--line); background: var(--panel);
+    font-size: 0.84rem; color: var(--muted); cursor: pointer; white-space: nowrap;
+  }
+  .tab.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .tab .dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--warn); margin-left: 0.35rem; vertical-align: middle; }
+  .tab { touch-action: none; user-select: none; -webkit-user-select: none; }
+  .tab.holding { opacity: 0.85; transform: scale(1.05); box-shadow: 0 4px 14px rgba(0,0,0,0.2); z-index: 5; position: relative; }
+  .tab-wrap { display: flex; align-items: center; gap: 0.2rem; flex-shrink: 0; }
+  .tab-add {
+    flex-shrink: 0; width: 2rem; height: 2rem; border-radius: 50%;
+    border: 1px dashed var(--faint); background: none; color: var(--muted);
+    font-size: 1.1rem; line-height: 1; cursor: pointer;
+  }
+  .tab-add:hover { border-color: var(--accent); color: var(--accent); }
+  .tab-end { border-style: dashed; }
+  .tab-end.active { border-style: solid; }
+
+  /* ---------- Arbeitsfläche ---------- */
+  main { max-width: 46rem; margin: 0 auto; padding: 1.2rem 1rem 8rem; }
+
+  .page-name {
+    width: 100%; font-size: 1.5rem; font-weight: 600; font-family: inherit;
+    border: none; background: none; color: var(--ink); padding: 0 0 0.8rem;
+    line-height: 1.3;
+  }
+  .page-name:focus { outline: none; }
+  .page-name::placeholder { color: var(--faint); }
+
+  /* ---------- Inhaltsfeld ---------- */
+  .hide { display: none !important; }
+
+  .canvas {
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 1.1rem 1.1rem 3.4rem; min-height: 45vh; position: relative;
+  }
+
+  .editor img.media-sel, .editor iframe.media-sel { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .editor .zi.media-sel { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .editor img, .editor iframe { cursor: pointer; }
+  .editor iframe { pointer-events: none; }
+
+  .media-bar {
+    position: absolute; z-index: 25; display: flex; align-items: center; gap: 0.15rem;
+    background: var(--ink); border-radius: 8px; padding: 0.25rem; box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+  }
+  .media-bar.hide { display: none; }
+  .media-bar button {
+    border: none; background: none; color: #fff; border-radius: 5px; cursor: pointer;
+    font-size: 0.78rem; padding: 0.3rem 0.5rem; font-family: inherit; white-space: nowrap;
+  }
+  .media-bar button:hover { background: rgba(255,255,255,0.18); }
+  .media-bar .mb-del { color: #ffb4a2; }
+  .mb-sep { width: 1px; height: 1.1rem; background: rgba(255,255,255,0.25); margin: 0 0.1rem; }
+
+  .res-handle {
+    position: absolute; width: 18px; height: 18px; border-radius: 50%;
+    background: var(--accent); border: 2px solid #fff; box-shadow: 0 1px 5px rgba(0,0,0,0.3);
+    cursor: nwse-resize; z-index: 25; touch-action: none;
+  }
+  .res-handle.hide { display: none; }
+  .editor { min-height: 40vh; font-size: 1rem; line-height: 1.7; }
+  .zi-editor {
+    min-height: 8rem; max-height: 45vh; overflow-y: auto; border: 1px solid var(--line);
+    border-radius: 8px; padding: 0.6rem 0.75rem; background: var(--bg);
+  }
+  .zi-editor:focus { outline: none; border-color: var(--accent); }
+  .fb-zi { min-height: 4rem; }
+  .fb-editor-wrap { margin-top: 1rem; padding-top: 0.9rem; border-top: 1px dashed var(--line); }
+  .fb-editor-hint { font-size: 0.8rem; color: var(--faint); margin: -0.15rem 0 0.7rem; }
+  .editor:focus { outline: none; }
+  .editor:empty:before { content: attr(data-ph); color: var(--faint); }
+  .editor > *:first-child { margin-top: 0; }
+  .editor h2 { font-size: 1.3rem; font-weight: 600; margin: 1.4rem 0 0.5rem; line-height: 1.3; }
+  .editor h3 { font-size: 1.1rem; font-weight: 600; margin: 1.2rem 0 0.4rem; line-height: 1.35; }
+  .editor p { margin: 0 0 0.9rem; }
+  .editor ul, .editor ol { margin: 0 0 0.9rem; padding-left: 1.4rem; }
+  .editor li { margin-bottom: 0.3rem; }
+  .editor a { color: var(--accent); }
+  .editor blockquote {
+    margin: 0 0 0.9rem; padding: 0.1rem 0 0.1rem 0.9rem;
+    border-left: 3px solid var(--line); color: var(--muted);
+  }
+  .editor img { max-width: 100%; height: auto; border-radius: 8px; display: block; margin: 1rem 0; }
+  .editor iframe {
+    width: 100%; aspect-ratio: 16/9; height: auto; border: none;
+    border-radius: 8px; display: block; margin: 1rem 0; background: #f3f4f6;
+  }
+  .editor table { width: 100%; border-collapse: collapse; margin: 0 0 0.9rem; font-size: 0.94rem; }
+  .editor th, .editor td { border: 1px solid var(--line); padding: 0.45rem 0.6rem; text-align: left; }
+  .editor code { background: #f3f4f6; padding: 0.1rem 0.3rem; border-radius: 4px; font-size: 0.9em; }
+  .editor .zi, .article .zi {
+    margin: 1rem 0; border: 1px solid var(--accent); border-radius: 8px; background: var(--accent-soft); overflow: hidden;
+  }
+  .editor .zi.zi-holding { opacity: 0.85; box-shadow: 0 6px 18px rgba(0,0,0,0.18); position: relative; z-index: 5; }
+  .editor .zi summary, .article .zi summary {
+    padding: 0.7rem 1rem; cursor: pointer; font-weight: 500; color: var(--accent);
+    list-style: none; display: flex; align-items: center; gap: 0.5rem;
+  }
+  .editor .zi summary { touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; }
+  .editor .zi.zi-holding summary { cursor: grabbing; }
+  .editor .zi summary::-webkit-details-marker { display: none; }
+  .editor .zi summary::before, .article .zi summary::before { content: '▸'; transition: transform .15s; }
+  .editor .zi[open] summary::before, .article .zi[open] summary::before { transform: rotate(90deg); }
+  .editor .zi-body, .article .zi-body { padding: 0 1rem 1rem; }
+  .editor .zi-body p:first-child, .article .zi-body p:first-child { margin-top: 0; }
+  .zi-title { flex: 1; }
+  .editor .zi-grip { color: var(--accent); opacity: 0.6; flex-shrink: 0; font-size: 0.9rem; }
+  .article .zi-grip { display: none; }
+  .editor .zi-edit, .editor .zi-x {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 1.4rem; height: 1.4rem; border-radius: 50%; flex-shrink: 0;
+    color: var(--accent); font-size: 0.75rem; cursor: pointer;
+  }
+  .editor .zi-edit:hover { background: rgba(0,0,0,0.08); }
+  .editor .zi-x:hover { background: rgba(0,0,0,0.08); color: var(--warn); }
+  .article .zi-edit, .article .zi-x { display: none; }
+
+  .canvas-tools { position: absolute; bottom: 0.7rem; right: 0.7rem; display: flex; gap: 0.4rem; }
+  .zi-btn, .code-btn {
+    padding: 0.45rem 0.75rem; border-radius: 8px; font-size: 0.82rem; cursor: pointer; font-family: inherit;
+  }
+  .zi-btn { border: 1px dashed var(--accent); background: var(--accent-soft); color: var(--accent); }
+  .zi-btn:hover { background: var(--accent); color: #fff; }
+  .code-btn { border: 1px dashed var(--muted); background: var(--bg); color: var(--muted); }
+  .code-btn:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .hist-btn {
+    width: 2.1rem; height: 2.1rem; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--panel); color: var(--muted); font-size: 1rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-family: inherit; line-height: 1;
+  }
+  .hist-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .hist-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .code-view {
+    width: 100%; min-height: 40vh; border: none; background: #1c1f24; color: #d8dee9;
+    font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.85rem; line-height: 1.6;
+    padding-bottom: 2.6rem; resize: vertical;
+  }
+  .code-view:focus { outline: none; }
+
+  .insert {
+    position: absolute; bottom: 0.7rem; right: 0.7rem;
+  }
+  .insert-btn {
+    width: 2.1rem; height: 2.1rem; border-radius: 50%; border: 1px solid var(--line);
+    background: var(--panel); color: var(--muted); font-size: 1.2rem; line-height: 1;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .insert-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .insert-menu {
+    position: absolute; bottom: 2.6rem; right: 0; background: var(--panel);
+    border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 6px 24px rgba(0,0,0,0.1);
+    padding: 0.3rem; display: flex; flex-direction: column; min-width: 11rem; z-index: 20;
+  }
+  .insert-menu.hide { display: none; }
+  .insert-menu button {
+    text-align: left; padding: 0.55rem 0.7rem; border: none; background: none;
+    border-radius: 6px; cursor: pointer; font-size: 0.92rem; color: var(--ink); font-family: inherit;
+  }
+  .insert-menu button:hover { background: var(--accent-soft); }
+
+  /* ---------- Seitenabschluss ---------- */
+  .footer-zone { margin-top: 1.1rem; }
+  .footer-label {
+    font-size: 0.76rem; color: var(--faint); text-transform: uppercase;
+    letter-spacing: 0.05em; margin-bottom: 0.5rem;
+  }
+  .footer-choice { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+  .footer-status {
+    padding: 0.55rem 0.9rem; font-size: 0.9rem; color: var(--accent); font-weight: 500;
+  }
+  .choice-pill {
+    padding: 0.55rem 1rem; border-radius: 8px; font-size: 0.9rem; cursor: pointer;
+    border: 1px solid var(--line); background: var(--panel); color: var(--muted); font-family: inherit;
+  }
+  .choice-pill:hover { border-color: var(--accent); }
+  .choice-pill.paste-pill { border-style: dashed; color: var(--accent); border-color: #9fbdb0; }
+  .choice-pill.paste-pill:hover { background: var(--accent-soft); }
+
+  .task-box {
+    background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--warn);
+    border-radius: var(--radius); padding: 1rem; margin-top: 0.6rem;
+  }
+  .task-head { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.8rem; }
+  .task-type { font-size: 0.8rem; color: var(--warn); font-weight: 600; flex: 1; }
+  .task-remove { border: none; background: none; color: var(--faint); cursor: pointer; font-size: 0.85rem; padding: 0.2rem; }
+  .task-remove:hover { color: var(--warn); }
+
+  .fld { display: block; font-size: 0.78rem; color: var(--muted); margin: 0.7rem 0 0.25rem; }
+  input[type=text], input[type=url], input[type=number], textarea {
+    width: 100%; font-family: inherit; font-size: 0.95rem; padding: 0.6rem 0.7rem;
+    border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink);
+  }
+  input:focus, textarea:focus { outline: none; border-color: var(--accent); }
+  textarea { min-height: 4.5rem; resize: vertical; line-height: 1.5; }
+  .row { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.45rem; }
+  .row input { flex: 1; }
+  .row .rm { border: none; background: none; color: var(--faint); cursor: pointer; font-size: 0.9rem; padding: 0.3rem; flex-shrink: 0; }
+
+  .pair-row { align-items: stretch; }
+  .pair-side { flex: 1; display: flex; gap: 0.3rem; align-items: center; min-width: 0; border-radius: 8px; transition: background .15s, box-shadow .15s; }
+  .pair-side.drop { background: var(--accent-soft); box-shadow: inset 0 0 0 2px var(--accent); }
+  .pair-row.row-drop { background: var(--accent-soft); box-shadow: inset 0 0 0 2px var(--accent); border-radius: 8px; }
+  .pair-side input[type=text] { flex: 1; margin: 0; }
+  .pair-side-img {
+    position: relative; flex: 1; border: 1px solid var(--line); border-radius: 8px; padding: 0.3rem;
+    display: flex; align-items: center; justify-content: center; min-height: 2.3rem; background: var(--bg);
+  }
+  .pair-side-img img { max-width: 100%; max-height: 4.5rem; height: auto; border-radius: 4px; display: block; }
+  .pair-img-rm {
+    position: absolute; top: -0.4rem; right: -0.4rem; width: 1.3rem; height: 1.3rem; border-radius: 50%;
+    border: 1px solid var(--line); background: var(--panel); color: var(--warn); font-size: 0.65rem; cursor: pointer; padding: 0;
+  }
+  .row .rm:hover { color: var(--warn); }
+  .radio-lbl { display: flex; align-items: center; gap: 0.3rem; font-size: 0.82rem; color: var(--muted); flex-shrink: 0; }
+  .add-row {
+    font-size: 0.85rem; padding: 0.45rem 0.8rem; border: 1px dashed var(--line);
+    background: none; border-radius: 8px; cursor: pointer; color: var(--accent); font-family: inherit;
+  }
+  .add-row:hover { border-color: var(--accent); }
+  .hint { font-size: 0.8rem; color: var(--faint); margin-top: 0.3rem; }
+
+  .page-tools { display: flex; gap: 0.5rem; margin-top: 1.6rem; }
+  .page-tools button {
+    font-size: 0.84rem; padding: 0.45rem 0.8rem; border: 1px solid var(--line);
+    background: var(--panel); border-radius: 8px; cursor: pointer; color: var(--muted); font-family: inherit;
+  }
+  .page-tools button:hover { border-color: var(--warn); color: var(--warn); }
+
+  /* ---------- Schüleransicht ---------- */
+  #play { display: none; }
+  .progress { display: flex; gap: 3px; max-width: 46rem; margin: 0 auto; padding: 0 1rem 0.8rem; }
+  .progress i { flex: 1; height: 3px; border-radius: 2px; background: var(--line); transition: background .3s; }
+  .progress i.done { background: var(--accent); }
+  .progress i.now { background: var(--ink); }
+
+  .sheet {
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 1.4rem 1.2rem; margin-bottom: 1rem;
+  }
+  .sheet h1 { font-size: 1.45rem; font-weight: 600; margin: 0 0 1rem; line-height: 1.3; }
+
+  .score-box { margin-top: 1.2rem; border-top: 1px solid var(--line); padding-top: 1.2rem; }
+  .score-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.6rem 0; border-bottom: 1px solid var(--line); font-size: 0.98rem;
+  }
+  .score-row:last-child { border-bottom: none; }
+  .score-row strong { font-size: 1.05rem; }
+  .score-empty { color: var(--muted); font-size: 0.95rem; }
+  .article > *:first-child { margin-top: 0; }
+  .article h2 { font-size: 1.25rem; font-weight: 600; margin: 1.4rem 0 0.5rem; line-height: 1.3; }
+  .article h3 { font-size: 1.08rem; font-weight: 600; margin: 1.2rem 0 0.4rem; }
+  .article p { margin: 0 0 0.9rem; }
+  .article ul, .article ol { margin: 0 0 0.9rem; padding-left: 1.4rem; }
+  .article li { margin-bottom: 0.3rem; }
+  .article a { color: var(--accent); }
+  .article blockquote { margin: 0 0 0.9rem; padding: 0.1rem 0 0.1rem 0.9rem; border-left: 3px solid var(--line); color: var(--muted); }
+  .article img { max-width: 100%; height: auto; border-radius: 8px; display: block; margin: 1rem 0; }
+  .article iframe { width: 100%; aspect-ratio: 16/9; height: auto; border: none; border-radius: 8px; display: block; margin: 1rem 0; }
+  .article table { width: 100%; border-collapse: collapse; margin: 0 0 0.9rem; font-size: 0.94rem; }
+  .article th, .article td { border: 1px solid var(--line); padding: 0.45rem 0.6rem; text-align: left; }
+
+  .task {
+    margin-top: 1.6rem; padding-top: 1.4rem; border-top: 1px solid var(--line);
+  }
+  .task-q { font-weight: 600; margin: 0 0 1rem; }
+  .opt {
+    display: block; width: 100%; text-align: left; padding: 0.8rem 1rem; margin-bottom: 0.5rem;
+    border: 1px solid var(--line); background: var(--panel); border-radius: 8px;
+    cursor: pointer; font-size: 0.98rem; font-family: inherit; color: var(--ink);
+  }
+  .opt:hover:not(:disabled) { border-color: var(--accent); }
+  .opt.ok { border-color: var(--accent); background: var(--accent-soft); }
+  .opt.no { border-color: var(--warn); background: #fdf1ee; }
+  .opt:disabled { cursor: default; }
+  .fb { font-size: 0.9rem; margin-top: 0.7rem; min-height: 1.2em; }
+  .fb.ok { color: var(--accent); }
+  .fb.no { color: var(--warn); }
+  .fb-extra { margin-top: 0.6rem; padding: 0.7rem 0.9rem; border-radius: 8px; font-size: 0.92rem; line-height: 1.55; }
+  .fb-extra.good { background: var(--accent-soft); border: 1px solid #9fbdb0; color: var(--ink); }
+  .fb-extra.hint { background: #fdf1ee; border: 1px solid #eab7a8; color: var(--ink); }
+  .fb-extra p:first-child { margin-top: 0; }
+  .fb-extra p:last-child { margin-bottom: 0; }
+  .fb-extra img { max-width: 100%; height: auto; border-radius: 6px; }
+  .check {
+    margin-top: 0.9rem; padding: 0.7rem 1.3rem; background: var(--ink); color: #fff;
+    border: none; border-radius: 8px; cursor: pointer; font-size: 0.95rem; font-family: inherit;
+  }
+  .check:disabled { opacity: 0.4; }
+
+  .dd { display: grid; gap: 0.9rem; }
+  @media (min-width: 34rem) { .dd { grid-template-columns: 1fr 1fr; } }
+  .chip {
+    padding: 0.65rem 0.85rem; margin-bottom: 0.45rem; background: var(--bg);
+    border: 1px solid var(--line); border-radius: 8px; font-size: 0.94rem; cursor: pointer;
+    overflow-wrap: anywhere;
+  }
+  .chip.sel { border-color: var(--ink); background: var(--ink); color: #fff; }
+  .chip.used { opacity: 0.35; }
+  .chip img { max-width: 100%; max-height: 7rem; height: auto; display: block; margin: 0 auto; border-radius: 4px; }
+  .slot {
+    padding: 0.65rem 0.85rem; margin-bottom: 0.45rem; min-height: 3.4rem;
+    border: 1px dashed var(--line); border-radius: 8px; background: var(--bg); font-size: 0.9rem; cursor: pointer;
+    overflow-wrap: anywhere;
+  }
+  .slot .d { color: var(--muted); font-size: 0.88rem; }
+  .slot .d img, .slot .a img { max-width: 100%; max-height: 7rem; height: auto; display: block; margin: 0.2rem auto; border-radius: 4px; }
+  .slot .a { font-weight: 600; margin-top: 0.3rem; }
+  .slot.ok { border-color: var(--accent); border-style: solid; }
+  .slot.no { border-color: var(--warn); border-style: solid; }
+  .gap-in {
+    display: inline-block; width: 7rem; padding: 0.2rem 0.4rem; margin: 0 0.15rem;
+    border: none; border-bottom: 2px solid var(--accent); background: var(--accent-soft);
+    border-radius: 4px 4px 0 0; font-size: inherit; font-family: inherit; text-align: center;
+  }
+  .gap-in.ok { background: #dcebe4; }
+  .gap-in.no { background: #fdf1ee; border-color: var(--warn); }
+  .ord {
+    padding: 0.75rem 0.9rem; margin-bottom: 0.45rem; background: var(--bg);
+    border: 1px solid var(--line); border-radius: 8px; font-size: 0.95rem;
+    display: flex; align-items: center; gap: 0.7rem;
+  }
+  .ord .grip { color: var(--faint); font-size: 0.9rem; }
+  .ord .txt { flex: 1; }
+  .ord .mv { display: flex; flex-direction: column; gap: 2px; }
+  .ord .mv button {
+    border: 1px solid var(--line); background: var(--panel); border-radius: 5px;
+    width: 1.8rem; height: 1.4rem; cursor: pointer; font-size: 0.7rem; color: var(--muted); padding: 0;
+  }
+  .ord .mv button:hover { border-color: var(--accent); color: var(--accent); }
+  .ord.ok { border-color: var(--accent); background: var(--accent-soft); }
+  .ord.no { border-color: var(--warn); background: #fdf1ee; }
+
+  .nav {
+    position: sticky; bottom: 0; background: rgba(251,251,250,0.94); backdrop-filter: blur(10px);
+    border-top: 1px solid var(--line); padding: 0.7rem 1rem calc(0.7rem + env(safe-area-inset-bottom));
+    margin: 0 -1rem;
+  }
+  .nav-inner { max-width: 46rem; margin: 0 auto; display: flex; align-items: center; gap: 0.7rem; }
+  .nav button {
+    padding: 0.8rem 1.3rem; border-radius: 8px; font-size: 0.95rem; cursor: pointer; font-family: inherit;
+    border: 1px solid var(--line); background: var(--panel); color: var(--ink);
+  }
+  .nav button.main { flex: 1; background: var(--ink); color: #fff; border-color: var(--ink); font-weight: 500; }
+  .nav button:disabled { opacity: 0.35; cursor: not-allowed; }
+  .nav .count { font-size: 0.85rem; color: var(--faint); flex-shrink: 0; }
+  .locked-note { font-size: 0.85rem; color: var(--warn); text-align: center; margin-top: 0.5rem; }
+
+  /* ---------- Modal ---------- */
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex;
+    align-items: flex-end; justify-content: center; z-index: 60; padding: 0; }
+  @media (min-width: 34rem) { .modal { align-items: center; padding: 1rem; } }
+  .modal.hide { display: none; }
+  .modal-box {
+    background: var(--panel); border-radius: 16px 16px 0 0; padding: 1.3rem 1.1rem calc(1.3rem + env(safe-area-inset-bottom));
+    width: 100%; max-width: 26rem;
+  }
+  @media (min-width: 34rem) { .modal-box { border-radius: 14px; padding-bottom: 1.3rem; } }
+  .modal-box h3 { margin: 0 0 1rem; font-size: 1.1rem; font-weight: 600; }
+  .modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.8rem; }
+  .modal-head h3 { flex: 1; }
+  .modal-x {
+    flex-shrink: 0; width: 1.8rem; height: 1.8rem; border-radius: 50%; border: none;
+    background: var(--bg); color: var(--muted); cursor: pointer; font-size: 0.85rem;
+    display: flex; align-items: center; justify-content: center; margin-top: -0.15rem;
+  }
+  .modal-x:hover { background: var(--line); color: var(--ink); }
+  .modal-box .opts { display: flex; flex-direction: column; gap: 0.5rem; }
+  .modal-box .opts button {
+    padding: 0.9rem 1rem; border: 1px solid var(--line); border-radius: 10px; background: var(--bg);
+    cursor: pointer; font-size: 0.98rem; text-align: left; font-family: inherit; color: var(--ink);
+  }
+  .modal-box .opts button:hover { border-color: var(--accent); background: var(--accent-soft); }
+  .modal-box .opts small { display: block; color: var(--muted); font-size: 0.82rem; margin-top: 0.15rem; }
+  .modal-cancel { width: 100%; margin-top: 0.8rem; padding: 0.75rem; border: none; background: none;
+    color: var(--muted); cursor: pointer; font-size: 0.95rem; font-family: inherit; }
+
+  .dlg-btns { display: flex; gap: 0.5rem; margin-top: 1rem; }
+  .dlg-btns button {
+    flex: 1; padding: 0.75rem; border-radius: 8px; cursor: pointer; font-size: 0.95rem; font-family: inherit;
+  }
+  .dlg-cancel { border: 1px solid var(--line); background: var(--panel); color: var(--muted); }
+  .dlg-ok { border: none; background: var(--ink); color: #fff; }
+  .dlg-ok.danger { background: var(--warn); }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 1.5rem; transform: translateX(-50%) translateY(1rem);
+    background: var(--ink); color: #fff; padding: 0.7rem 1.1rem; border-radius: 8px;
+    font-size: 0.9rem; z-index: 80; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s;
+    max-width: 90vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .opt.sel { border-color: var(--ink); background: #eef0f3; font-weight: 500; }
+  .answer-in {
+    width: 100%; padding: 0.8rem 1rem; border: 1px solid var(--line); border-radius: 8px;
+    background: var(--panel); font-size: 1rem; font-family: inherit;
+  }
+  .answer-in:focus { outline: none; border-color: var(--accent); }
+  .answer-in.ok { border-color: var(--accent); background: var(--accent-soft); }
+  .answer-in.no { border-color: var(--warn); background: #fdf1ee; }
+
+  .editor.drop { border-color: var(--accent); background: var(--accent-soft); }
+  .modal-box.wide { max-width: 34rem; }
+  .ai-intro { font-size: 0.9rem; color: var(--muted); margin: 0 0 0.8rem; }
+  .copy-prompt {
+    width: 100%; padding: 0.7rem; border: 1px solid var(--accent); background: var(--accent-soft);
+    color: var(--accent); border-radius: 8px; cursor: pointer; font-size: 0.92rem; font-family: inherit;
+    margin-bottom: 0.5rem;
+  }
+  .copy-prompt:hover { background: var(--accent); color: #fff; }
+  .modal-box .opts button.ai-opt { border-style: dashed; border-color: var(--accent); color: var(--accent); }
+  #aiErr { min-height: 0; }
+  #aiErr:not(:empty) { margin-top: 0.5rem; }
+
+.topbar-actions,.page-tabs{display:none!important}
+.course-title{pointer-events:none}
+#play{display:block}
+</style></head><body>
+<div class="topbar">
+  <div class="topbar-inner"><input class="course-title" id="courseTitle" readonly value="1. Die Physik – eine Naturwissenschaft (8. Klasse)"></div>
+  <div class="progress" id="progress"></div>
+</div>
+<main><div id="edit" style="display:none"></div><div id="play"></div></main>
+<script type="application/json" id="lektionsdaten">{"title":"1. Die Physik – eine Naturwissenschaft (8. Klasse)","endHtml":"\u003cp>Du hast alles ordentlich notiert und die Wiederholung abgeschlossen? Sehr gut – dann bist du startklar für die nächste Stunde!\u003c/p>","pages":[{"id":"p1","title":"Physik, Biologie und Chemie – eine Wiederholung","html":"\u003cp>Ihr kennt Physik, Biologie und Chemie schon aus der 7. Klasse. Heute wiederholen und vertiefen wir, was eine Naturwissenschaft eigentlich ausmacht – und wie die drei Fächer zusammenhängen.\u003c/p>\u003ch3>Verbindungen zwischen den Fächern\u003c/h3>\u003cp>\u003cstrong>Physik und Chemie:\u003c/strong>\u003c/p>\u003cul>\u003cli>\u003cstrong>Energie und Reaktionen:\u003c/strong> In der Physik lernt ihr über Energie und ihre Umwandlung, während in der Chemie die Energie bei chemischen Reaktionen eine zentrale Rolle spielt.\u003c/li>\u003cli>\u003cstrong>Atome und Moleküle:\u003c/strong> Die Physik beschäftigt sich mit den Grundbausteinen der Materie, den Atomen, während die Chemie diese Atome und ihre Verbindungen untersucht.\u003c/li>\u003c/ul>\u003cp>\u003cstrong>Biologie und Chemie:\u003c/strong>\u003c/p>\u003cul>\u003cli>\u003cstrong>Biochemie:\u003c/strong> Die Biologie erklärt lebende Organismen, während die Chemie die chemischen Prozesse in diesen Organismen untersucht – zum Beispiel bei Enzymen und Stoffwechselprozessen.\u003c/li>\u003cli>\u003cstrong>Zellen und Moleküle:\u003c/strong> In der Biologie lernt ihr über Zellen und ihre Funktionen, während die Chemie die Moleküle und ihre Wechselwirkungen in diesen Zellen untersucht.\u003c/li>\u003c/ul>\u003cp>\u003cstrong>Physik und Biologie:\u003c/strong>\u003c/p>\u003cul>\u003cli>\u003cstrong>Energie und Bewegung:\u003c/strong> Die Physik erklärt die Gesetze der Bewegung und Energie, die auch in der Biologie eine Rolle spielen, zum Beispiel bei der Bewegung von Tieren oder der Photosynthese in Pflanzen.\u003c/li>\u003cli>\u003cstrong>Optik und Wahrnehmung:\u003c/strong> Die Physik der Lichtbrechung und -reflexion ist wichtig für das Verständnis der menschlichen Wahrnehmung, das in der Biologie untersucht wird.\u003c/li>\u003c/ul>\u003ch3>Unterschiede zwischen den Fächern\u003c/h3>\u003cp>\u003cstrong>Physik:\u003c/strong> untersucht die grundlegenden Gesetze der Natur, wie Bewegung, Energie, Kraft und Elektrizität – die fundamentalen Prinzipien, die das Universum regieren.\u003c/p>\u003cp>\u003cstrong>Biologie:\u003c/strong> untersucht lebende Organismen und ihre Wechselwirkungen mit der Umwelt – Struktur, Funktion, Wachstum und Entwicklung von Lebewesen.\u003c/p>\u003cp>\u003cstrong>Chemie:\u003c/strong> untersucht die Zusammensetzung, Eigenschaften und Veränderungen von Materie – Atome, Moleküle und ihre Reaktionen.\u003c/p>\u003cdetails class=\"zi\">\u003csummary>\u003cspan class=\"zi-grip\" contenteditable=\"false\">⠿\u003c/span>\u003cspan class=\"zi-title\">Wie arbeiten Naturwissenschaftler?\u003c/span>\u003cspan class=\"zi-edit\" contenteditable=\"false\" title=\"Zusatzinfo bearbeiten\">✎\u003c/span>\u003cspan class=\"zi-x\" contenteditable=\"false\" title=\"Zusatzinfo entfernen\">✕\u003c/span>\u003c/summary>\u003cdiv class=\"zi-body\">\u003cp>Ganz gleich ob Physik, Biologie oder Chemie – alle Naturwissenschaften gehen nach einem ähnlichen Muster vor, der sogenannten \u003cstrong>naturwissenschaftlichen Methode\u003c/strong>:\u003c/p>\u003col>\u003cli>\u003cstrong>Beobachten:\u003c/strong> Ein Phänomen fällt auf, z. B. ein Ball rollt langsamer aus, wenn der Boden rau ist.\u003c/li>\u003cli>\u003cstrong>Frage stellen:\u003c/strong> Woran liegt das genau?\u003c/li>\u003cli>\u003cstrong>Hypothese aufstellen:\u003c/strong> Eine begründete Vermutung, z. B. „Reibung bremst den Ball ab.“\u003c/li>\u003cli>\u003cstrong>Experiment durchführen:\u003c/strong> Die Vermutung wird gezielt und wiederholbar getestet.\u003c/li>\u003cli>\u003cstrong>Ergebnisse auswerten:\u003c/strong> Passen die Messdaten zur Hypothese?\u003c/li>\u003cli>\u003cstrong>Theorie formulieren:\u003c/strong> Bestätigt sich die Hypothese immer wieder, wird daraus ein anerkanntes Naturgesetz oder eine Theorie.\u003c/li>\u003c/ol>\u003cp>Merkt euch diese Reihenfolge gut – sie taucht gleich noch einmal als Aufgabe auf.\u003c/p>\u003c/div>\u003c/details>\u003cp>\u003cbr>\u003c/p>","task":null},{"id":"p2","title":"Verständnisfrage 1","html":"","task":{"id":"t2","type":"mc","fbCorrect":"\u003cp>\u003cstrong>Wusstest du?\u003c/strong> Das Wort „Chemie“ stammt vermutlich vom arabischen \u003cem>al-kīmiyā\u003c/em> ab, das wiederum auf das altägyptische Wort für „schwarzes Land“ (Ägypten, wegen des fruchtbaren, dunklen Nilschlamms) zurückgehen könnte. Über Jahrhunderte war die Chemie eng mit der Alchemie verbunden – dem Versuch, unedle Metalle in Gold zu verwandeln.\u003c/p>","fbWrong":"","q":"Welche Naturwissenschaft untersucht die Eigenschaften und Veränderungen von Materie?","opts":["Chemie","Physik","Biologie","Geologie"],"correct":0}},{"id":"p3","title":"Frage zum Text","html":"","task":{"id":"t3","type":"mc","fbCorrect":"\u003cp>\u003cstrong>Wusstest du?\u003c/strong> Schon vor Tausenden von Jahren beobachteten Menschen den Himmel, um Kalender zu erstellen, die Aussaat zu planen oder sich nachts zu orientieren. Babylonische und ägyptische Aufzeichnungen von Sternpositionen sind über 3000 Jahre alt – damit ist die Astronomie älter als Chemie und Biologie als eigenständige Wissenschaften.\u003c/p>","fbWrong":"","q":"Was ist die älteste Naturwissenschaft?","opts":["Astronomie","Biologie","Geologie","Archäologie"],"correct":0}},{"id":"p4","title":"Naturwissenschaftliche Methode","html":"\u003cp>Bringe die Schritte naturwissenschaftlichen Arbeitens (siehe Zusatzinfo auf der ersten Seite) in die richtige Reihenfolge.\u003c/p>","task":{"id":"t4","type":"order","fbCorrect":"\u003cp>Genau nach diesem Schema arbeiten alle Naturwissenschaftler:innen – egal ob in der Physik, Biologie oder Chemie.\u003c/p>","fbWrong":"","items":["Beobachten","Frage stellen","Hypothese aufstellen","Experiment durchführen","Ergebnisse auswerten","Theorie formulieren"]}},{"id":"p5","title":"Fachbegriffe zuordnen","html":"\u003cp>Ordne die drei Naturwissenschaften ihrer Beschreibung zu.\u003c/p>","task":{"id":"t5","type":"dragdrop","fbCorrect":"\u003cp>\u003cstrong>Wusstest du?\u003c/strong> Zwei der drei Fachbegriffe kommen aus dem Griechischen: \u003cem>Biologie\u003c/em> setzt sich aus \u003cem>bios\u003c/em> (Leben) und \u003cem>logos\u003c/em> (Lehre) zusammen, \u003cem>Physik\u003c/em> stammt von \u003cem>physis\u003c/em> (Natur). Das Wort \u003cem>Chemie\u003c/em> geht dagegen vermutlich auf das arabische \u003cem>al-kīmiyā\u003c/em> zurück.\u003c/p>","fbWrong":"","pairs":[{"term":"Biologie","def":"untersucht lebende Organismen und ihre Wechselwirkungen mit der Umwelt"},{"term":"Chemie","def":"untersucht die Zusammensetzung, Eigenschaften und Veränderungen von Materie"},{"term":"Physik","def":"untersucht die grundlegenden Gesetze der Natur wie Bewegung, Energie, Kraft und Elektrizität"}]}},{"id":"p6","title":"Physik oder Chemie?","html":"","task":{"id":"t6","type":"multi","fbCorrect":"\u003cp>\u003cstrong>Merke:\u003c/strong> Ein gutes Beispiel für die Überschneidung ist die Kernphysik – sie untersucht, wie sich Atomkerne umwandeln, was wiederum die Grundlage für ganz neue chemische Elemente sein kann.\u003c/p>","fbWrong":"","q":"Welche Aussagen zum Unterschied zwischen Physik und Chemie sind richtig? (Mehrfachauswahl)","opts":["Physik untersucht Energie und Bewegung, Chemie untersucht chemische Reaktionen.","Beide Fächer beschäftigen sich mit den kleinsten Bausteinen der Materie – deshalb überschneiden sie sich oft.","Physik untersucht ausschließlich lebende Organismen.","Chemie untersucht, wie sich Stoffe durch Reaktionen in neue Stoffe umwandeln."],"correct":[0,1,3]}},{"id":"p7","title":"Verständnisfrage 6","html":"","task":{"id":"t7","type":"mc","fbCorrect":"\u003cp>Die Astronomie ist die einzige Naturwissenschaft, bei der wir die Vergangenheit direkt „sehen“ können: Das Licht der Sonne ist rund 8 Minuten unterwegs, bis es uns erreicht. Wir sehen die Sonne also immer so, wie sie vor 8 Minuten ausgesehen hat – bei weit entfernten Sternen sind es sogar Tausende von Jahren.\u003c/p>","fbWrong":"","q":"Welche Naturwissenschaft untersucht die Bewegung der Himmelskörper?","opts":["Astronomie","Biologie","Chemie","Physik"],"correct":0}},{"id":"p8","title":"Bereiche der Naturwissenschaft","html":"\u003cp>Die Entstehung und Entwicklung aller Lebewesen wurde zum Untersuchungsgegenstand der Biologie. Die Menschen begannen, Pflanzen und Tiere zu züchten. Sie probierten aus, welche Pflanzen dem Menschen guttaten und ihn vor Krankheiten bewahrten.\u003c/p>\u003cp>Den Blick ins Innere der Stoffe und die Frage, was mit den kleinsten Bauteilen passiert, beschäftigt die Chemie. Sie beantwortet Fragen nach den Eigenschaften und dem Aufbau der Stoffe und untersucht, wie neue Stoffe mit neuen Eigenschaften hergestellt werden können.\u003c/p>\u003cp>Die Physik untersucht Vorgänge und Erscheinungen in der unbelebten Natur. Der Physiker beobachtet die Natur. Er misst und führt Experimente durch, um die Naturgesetze zu erkennen und noch besser zu verstehen. Viele dieser Kenntnisse werden in der Technik angewandt.\u003c/p>\u003cdetails class=\"zi\">\u003csummary>\u003cspan class=\"zi-grip\" contenteditable=\"false\">⠿\u003c/span>\u003cspan class=\"zi-title\">Beispiel aus der Praxis: Biochemie\u003c/span>\u003cspan class=\"zi-edit\" contenteditable=\"false\" title=\"Zusatzinfo bearbeiten\">✎\u003c/span>\u003cspan class=\"zi-x\" contenteditable=\"false\" title=\"Zusatzinfo entfernen\">✕\u003c/span>\u003c/summary>\u003cdiv class=\"zi-body\">\u003cp>Wenn ein Medikament entwickelt wird, arbeiten alle drei Fächer zusammen: Biolog:innen untersuchen, wie ein Krankheitserreger im Körper wirkt, Chemiker:innen entwickeln einen Wirkstoff, der genau dort andockt, und Physiker:innen liefern Messverfahren (z. B. Röntgenstrukturanalyse), um die Molekülform sichtbar zu machen.\u003c/p>\u003c/div>\u003c/details>\u003cp>\u003cbr>\u003c/p>","task":null},{"id":"p9","title":"Meine ersten Mitschriften! Wie geht das?","html":"\u003cp>Diese Anleitung nimmst du, falls du noch keine Mitschriften digital auf dem iPad gemacht hast.\u003c/p>\u003col>\u003cli>Erstelle eine Mappe in OneNote mit dem Namen „Physik“.\u003c/li>\u003cli>Innerhalb der Mappe erstellst du eine erste Notiz und benennst diese nach dem Thema der Stunde „1. Die Physik – eine Naturwissenschaft“ (8. Klasse – ergänze die Mitschriften vom letzten Jahr).\u003c/li>\u003c/ol>","task":null},{"id":"p10","title":"Übersicht Teilbereiche der Physik","html":"\u003cp>\u003cstrong>Aufgabe:\u003c/strong>\u003c/p>\u003col>\u003cli>Kopiere dir die Übersicht in deine Mitschriften.\u003c/li>\u003cli>Ordne anschließend unten die wichtigsten Teilbereiche ihrer Beschreibung zu.\u003c/li>\u003cli>Finde für mindestens drei Bereiche ein Beispiel aus dem Alltag – notiere es dazu.\u003c/li>\u003c/ol>\u003cimg src=\"https://lessing-gymnasium-bochum.de/wp-content/uploads/2020/05/teilgebiete.jpg\" style=\"width:100%\">","task":{"id":"t10","type":"dragdrop","fbCorrect":"\u003cp>\u003cstrong>Weitere Teilbereiche der Physik (für Interessierte):\u003c/strong>\u003c/p>\u003cul>\u003cli>\u003cstrong>Kernphysik:\u003c/strong> Aufbau und Umwandlung von Atomkernen.\u003c/li>\u003cli>\u003cstrong>Atomphysik:\u003c/strong> Aufbau und Eigenschaften von Atomen.\u003c/li>\u003cli>\u003cstrong>Teilchenphysik:\u003c/strong> die kleinsten bekannten Bausteine der Materie.\u003c/li>\u003cli>\u003cstrong>Relativitätstheorie:\u003c/strong> Raum, Zeit und Schwerkraft bei sehr hohen Geschwindigkeiten bzw. großen Massen.\u003c/li>\u003cli>\u003cstrong>Festkörperphysik:\u003c/strong> Eigenschaften fester Stoffe, z. B. von Kristallen oder Halbleitern.\u003c/li>\u003cli>\u003cstrong>Biophysik:\u003c/strong> physikalische Vorgänge in Lebewesen, z. B. Nervenreize.\u003c/li>\u003cli>\u003cstrong>Plasmaphysik:\u003c/strong> der vierte Aggregatzustand „Plasma“, z. B. im Inneren von Sternen.\u003c/li>\u003c/ul>","fbWrong":"","pairs":[{"term":"Mechanik","def":"befasst sich mit Bewegungen und Kräften von Körpern"},{"term":"Akustik","def":"erforscht Schall und wie er entsteht, sich ausbreitet und wahrgenommen wird"},{"term":"Optik","def":"untersucht Licht, seine Ausbreitung, Brechung und Reflexion"},{"term":"Wärmelehre","def":"beschäftigt sich mit Temperatur, Wärmeenergie und deren Übertragung"},{"term":"Elektrizitätslehre","def":"untersucht elektrische Ladungen, Ströme und Felder"},{"term":"Astrophysik & Astronomie","def":"erforscht Sterne, Planeten und den Aufbau des Weltalls"}]}},{"id":"p11","title":"Zusammenfassung","html":"\u003cp>Zum Abschluss: Fülle die Lücken mit den passenden Fachbegriffen aus der heutigen Stunde.\u003c/p>","task":{"id":"t11","type":"gap","fbCorrect":"\u003cp>Gut gemerkt – diese Begriffe begleiten euch das ganze Schuljahr über in allen drei Naturwissenschaften.\u003c/p>","fbWrong":"","text":"Die *Physik* untersucht Kräfte, Bewegung und Energie in der unbelebten Natur. Die *Chemie* untersucht den Aufbau und die Reaktionen von Stoffen. Die *Biologie* untersucht Lebewesen und ihre Lebensprozesse. Die älteste Naturwissenschaft ist die *Astronomie*."}}]}</script>
+<script>
+
+/* ================= Datenmodell ================= */
+let n = 1;
+const uid = p => p + '_' + (n++) + '_' + Math.random().toString(36).slice(2, 6);
+
+const newTask = t => ({
+  mc:        () => ({ id: uid('t'), type: 'mc', q: '', opts: ['', ''], correct: 0, fbCorrect: '', fbWrong: '' }),
+  multi:     () => ({ id: uid('t'), type: 'multi', q: '', opts: ['', '', ''], correct: [0], fbCorrect: '', fbWrong: '' }),
+  truefalse: () => ({ id: uid('t'), type: 'truefalse', q: '', answer: true, fbCorrect: '', fbWrong: '' }),
+  text:      () => ({ id: uid('t'), type: 'text', q: '', answers: [''], fbCorrect: '', fbWrong: '' }),
+  password:  () => ({ id: uid('t'), type: 'password', q: '', answers: [''], fbCorrect: '', fbWrong: '' }),
+  dragdrop:  () => ({ id: uid('t'), type: 'dragdrop', pairs: [{ term: '', def: '' }, { term: '', def: '' }], fbCorrect: '', fbWrong: '' }),
+  gap:       () => ({ id: uid('t'), type: 'gap', text: 'Die *Frequenz* wird in *Hertz* gemessen.', fbCorrect: '', fbWrong: '' }),
+  order:     () => ({ id: uid('t'), type: 'order', items: ['Erster Schritt', 'Zweiter Schritt', 'Dritter Schritt'], fbCorrect: '', fbWrong: '' })
+}[t]());
+
+const newPage = () => ({ id: uid('p'), title: '', html: '', task: null });
+
+let course = { title: 'Meine Lernstrecke', endHtml: '', pages: [newPage()] };
+let mode = 'edit', pi = 0, playIdx = 0, solved = {}, wrongTries = {}, codeMode = false, editingEnd = false;
+
+/* ---------- Rückgängig / Wiederholen (pro Seite) ---------- */
+let editHistory = {};           // pageId -> { stack: [html, ...], idx }
+let histTimer = null;
+let histFlushNow = false;
+const HIST_DEBOUNCE = 500;      // Pause beim Tippen, nach der ein Schritt gespeichert wird
+const HIST_MAX = 60;            // Schritte pro Seite
+
+function ensureHist(p) {
+  if (!editHistory[p.id]) editHistory[p.id] = { stack: [p.html || ''], idx: 0 };
+}
+function pushHist(pid, html) {
+  const h = editHistory[pid] || (editHistory[pid] = { stack: [''], idx: 0 });
+  if (h.stack[h.idx] === html) return;
+  h.stack = h.stack.slice(0, h.idx + 1);
+  h.stack.push(html);
+  if (h.stack.length > HIST_MAX) h.stack.shift();
+  h.idx = h.stack.length - 1;
+  updateUndoRedoUI();
+}
+// Liefert die Seite, die gerade im Inhaltsfeld bearbeitet wird — eine echte Seite
+// oder die virtuelle "Ende"-Seite (ihr Inhalt liegt in course.endHtml).
+function curPage() {
+  if (editingEnd) return { id: '__end__', get html() { return course.endHtml || ''; }, set html(v) { course.endHtml = v; } };
+  return course.pages[pi];
+}
+function hasEndContent() {
+  const raw = course.endHtml || '';
+  return !!raw.replace(/<[^>]*>/g, '').trim() || /<img\b|<iframe\b/i.test(raw);
+}
+// Vor einer konkreten Aktion (Einfügen, Löschen, Größe ändern …) aufrufen:
+// sichert den bisherigen Stand und sorgt dafür, dass der nächste p_html-Aufruf
+// sofort (statt verzögert) als eigener Schritt gespeichert wird.
+function histCheckpoint() {
+  const p = curPage(); if (!p) return;
+  clearTimeout(histTimer);
+  pushHist(p.id, p.html);
+  histFlushNow = true;
+}
+function updateUndoRedoUI() {
+  const p = curPage(); if (!p) return;
+  const h = editHistory[p.id];
+  const u = document.getElementById('btnUndo'), r = document.getElementById('btnRedo');
+  if (u) u.disabled = !(h && h.idx > 0);
+  if (r) r.disabled = !(h && h.idx < h.stack.length - 1);
+}
+function applyHistState(p, html) {
+  p.html = html;
+  deselectMedia();
+  if (codeMode) {
+    const ta = document.getElementById('edCode');
+    if (ta) ta.value = prettyHtml(html);
+  } else {
+    const e = document.getElementById('ed');
+    if (e) e.innerHTML = html;
+  }
+  updateUndoRedoUI();
+}
+function undoEdit() {
+  const p = curPage(); if (!p) return;
+  ensureHist(p);
+  const h = editHistory[p.id];
+  if (h.idx <= 0) return;
+  clearTimeout(histTimer); histFlushNow = false;
+  h.idx--;
+  applyHistState(p, h.stack[h.idx]);
+}
+function redoEdit() {
+  const p = curPage(); if (!p) return;
+  ensureHist(p);
+  const h = editHistory[p.id];
+  if (h.idx >= h.stack.length - 1) return;
+  clearTimeout(histTimer); histFlushNow = false;
+  h.idx++;
+  applyHistState(p, h.stack[h.idx]);
+}
+function onEdKeydown(e) {
+  const mod = e.ctrlKey || e.metaKey;
+  if (!mod) return;
+  const k = e.key.toLowerCase();
+  if (k === 'z' && !e.shiftKey) { e.preventDefault(); undoEdit(); }
+  else if (k === 'y' || (k === 'z' && e.shiftKey)) { e.preventDefault(); redoEdit(); }
+}
+
+/* ================= Modus ================= */
+function setMode(m) {
+  mode = m;
+  document.getElementById('edit').style.display = m === 'edit' ? 'block' : 'none';
+  document.getElementById('play').style.display = m === 'play' ? 'block' : 'none';
+  document.getElementById('btnEdit').classList.toggle('on', m === 'edit');
+  document.getElementById('btnPlay').classList.toggle('on', m === 'play');
+  document.getElementById('tabs').style.display = m === 'edit' ? 'flex' : 'none';
+  document.getElementById('progress').style.display = m === 'play' ? 'flex' : 'none';
+  document.getElementById('courseTitle').readOnly = m === 'play';
+  // In der Vorschau nur zeigen, was Schüler auch wirklich sehen — Bearbeiten-Aktionen ausblenden
+  document.getElementById('tbSep').style.display = m === 'play' ? 'none' : '';
+  document.getElementById('btnOpenFile').style.display = m === 'play' ? 'none' : '';
+  document.getElementById('btnSaveLesson').style.display = m === 'play' ? 'none' : '';
+  if (m === 'play') { playIdx = pi; solved = {}; wrongTries = {}; renderPlay(); }
+  else renderEdit();
+}
+
+/* ================= Bearbeiten ================= */
+let tabHold = null;       // aktiver Halte-/Verschiebevorgang
+let suppressTabClick = false;
+
+function renderTabs() {
+  const el = document.getElementById('tabs');
+  el.innerHTML = '';
+  course.pages.forEach((p, i) => {
+    const wrap = document.createElement('span');
+    wrap.className = 'tab-wrap';
+    const b = document.createElement('button');
+    b.className = 'tab' + (!editingEnd && i === pi ? ' active' : '');
+    b.innerHTML = (p.title ? esc(p.title.slice(0, 22)) : '<span style="opacity:.5">Ohne Titel</span>') + (p.task ? '<span class="dot"></span>' : '');
+    b.onclick = () => { if (suppressTabClick) { suppressTabClick = false; return; } pi = i; editingEnd = false; codeMode = false; renderEdit(); };
+    b.onpointerdown = e => startTabHold(e, i, b);
+    wrap.appendChild(b);
+    el.appendChild(wrap);
+  });
+  const add = document.createElement('button');
+  add.className = 'tab-add'; add.textContent = '+'; add.title = 'Seite hinzufügen';
+  add.onclick = () => { course.pages.push(newPage()); pi = course.pages.length - 1; editingEnd = false; codeMode = false; renderEdit(); window.scrollTo({ top: 0 }); };
+  el.appendChild(add);
+
+  // Fest verankerter Reiter für den Lektionsabschluss — nicht verschiebbar, nicht löschbar
+  const endWrap = document.createElement('span');
+  endWrap.className = 'tab-wrap';
+  const endBtn = document.createElement('button');
+  endBtn.className = 'tab tab-end' + (editingEnd ? ' active' : '');
+  endBtn.innerHTML = 'Ende' + (hasEndContent() ? '<span class="dot"></span>' : '');
+  endBtn.title = 'Abschluss & Auswertung der Lektion';
+  endBtn.onclick = () => { editingEnd = true; codeMode = false; renderEdit(); window.scrollTo({ top: 0 }); };
+  endWrap.appendChild(endBtn);
+  el.appendChild(endWrap);
+}
+
+// Reiter festhalten (kurze Verzögerung), danach mit dem Finger/der Maus verschieben
+function startTabHold(e, idx, el) {
+  if (e.button !== undefined && e.button !== 0) return;
+  const startX = e.clientX, startY = e.clientY, pid = e.pointerId;
+  let active = false;
+
+  const activate = () => {
+    active = true;
+    tabHold = { idx };
+    el.classList.add('holding');
+    try { el.setPointerCapture(pid); } catch (_) {}
+  };
+  const holdTimer = setTimeout(activate, 220);
+
+  const onMove = ev => {
+    if (!active) {
+      if (Math.abs(ev.clientX - startX) > 10 || Math.abs(ev.clientY - startY) > 10) finish(false);
+      return;
+    }
+    ev.preventDefault();
+    const rail = document.getElementById('tabs');
+    const tabs = [...rail.querySelectorAll('.tab')];
+    let newIdx = tabs.length - 1;
+    for (let k = 0; k < tabs.length; k++) {
+      const r = tabs[k].getBoundingClientRect();
+      if (ev.clientX < r.left + r.width / 2) { newIdx = k; break; }
+    }
+    if (newIdx !== tabHold.idx) {
+      const [moved] = course.pages.splice(tabHold.idx, 1);
+      course.pages.splice(newIdx, 0, moved);
+      tabHold.idx = newIdx; pi = newIdx;
+      renderTabs();
+      const fresh = [...document.getElementById('tabs').querySelectorAll('.tab')][newIdx];
+      if (fresh) { fresh.classList.add('holding'); try { fresh.setPointerCapture(pid); } catch (_) {} }
+    }
+  };
+  const onUp = () => finish(active);
+  function finish(wasActive) {
+    clearTimeout(holdTimer);
+    document.removeEventListener('pointermove', onMove);
+    document.removeEventListener('pointerup', onUp);
+    document.removeEventListener('pointercancel', onUp);
+    if (wasActive) {
+      suppressTabClick = true;
+      tabHold = null;
+      renderEdit();
+    }
+  }
+  document.addEventListener('pointermove', onMove);
+  document.addEventListener('pointerup', onUp);
+  document.addEventListener('pointercancel', onUp);
+}
+
+function renderEdit() {
+  renderTabs();
+  const p = curPage();
+  ensureHist(p);
+  const h = editHistory[p.id];
+  const canUndo = h.idx > 0, canRedo = h.idx < h.stack.length - 1;
+  const w = document.getElementById('edit');
+  const totalTasks = course.pages.filter(pg => pg.task).length;
+  w.innerHTML = `
+    ${editingEnd ? `
+      <div class="page-name">Ende der Lektion</div>
+      <p class="hint" style="margin-top:-0.6rem;margin-bottom:0.8rem;">Dieser Reiter steht immer am Ende und lässt sich nicht verschieben oder löschen. Schüler sehen diesen Inhalt automatisch nach der letzten Seite, direkt gefolgt von der Punktzahl-Auswertung${totalTasks ? ` (${totalTasks} Aufgabe${totalTasks === 1 ? '' : 'n'} in dieser Lektion)` : ''}.</p>
+    ` : `
+      <input class="page-name" id="pgName" value="${attr(p.title)}" placeholder="Seitentitel" oninput="setTitle(this.value)">
+    `}
+    <div class="canvas">
+      ${codeMode ? `
+        <textarea id="edCode" class="code-view" spellcheck="false" oninput="p_html(this.value)">${esc(prettyHtml(p.html))}</textarea>
+      ` : `
+        <div class="editor" id="ed" contenteditable="true"
+             data-ph="${editingEnd ? 'Abschluss frei gestalten — Text schreiben, Bilder ziehen, Links und Einbettungscode einfach reinkopieren.' : 'Schreib los. Text einfügen, Bilder ziehen, Links und Einbettungscode einfach reinkopieren — wird automatisch erkannt.'}"
+             oninput="p_html(this.innerHTML)" onpaste="onPaste(event)" onblur="linkify()"
+             onclick="onEdClick(event)" onpointerdown="onEdPointerDown(event)" onkeydown="onEdKeydown(event)"
+             ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">${p.html}</div>
+      `}
+      <div class="canvas-tools">
+        <button class="hist-btn" id="btnUndo" onclick="undoEdit()" ${canUndo ? '' : 'disabled'} title="Rückgängig (Strg+Z)">↶</button>
+        <button class="hist-btn" id="btnRedo" onclick="redoEdit()" ${canRedo ? '' : 'disabled'} title="Wiederholen (Strg+Umschalt+Z)">↷</button>
+        ${codeMode ? '' : '<button class="zi-btn" onclick="openZiModal()" title="Aufklappbare Zusatzinfo einfügen (z. B. für den E-Kurs)">+ Zusatzinfo</button>'}
+        <button class="code-btn" onclick="toggleCodeView()" title="${codeMode ? 'Zurück zur normalen Ansicht' : 'HTML-Code anzeigen, z. B. um ihn einer KI zum Umstyeln zu geben'}">${codeMode ? '✓ Fertig' : '</> Code'}</button>
+      </div>
+      <div class="media-bar hide" id="mediaBar"></div>
+      <div class="res-handle hide" id="resHandle"></div>
+    </div>
+    ${editingEnd ? '' : `
+    <div class="footer-zone">
+      <div class="footer-label">Am Ende der Seite</div>
+      ${p.task ? '' : `
+        <div class="footer-choice">
+          <div class="footer-status">✓ Einfach weiter</div>
+          <button class="choice-pill" onclick="openTaskModal()">Aufgabe zum Weiterkommen</button>
+          ${clipboardTask ? `<button class="choice-pill paste-pill" onclick="pasteTask()" title="${esc(TN[clipboardTask.type])} — von „${esc(clipboardTask._fromPage || 'anderer Seite')}"">📋 Kopierte Aufgabe einfügen</button>` : ''}
+        </div>`}
+      <div id="taskEd"></div>
+    </div>
+    <div class="page-tools">
+      <button onclick="delPage()">Seite löschen</button>
+    </div>`}
+  `;
+  if (!editingEnd && p.task) document.getElementById('taskEd').appendChild(taskEditor(p.task));
+}
+
+const setTitle = v => { course.pages[pi].title = v; renderTabs(); };
+const p_html = v => {
+  const cp = curPage();
+  cp.html = v;
+  const pid = cp.id;
+  clearTimeout(histTimer);
+  if (histFlushNow) { histFlushNow = false; pushHist(pid, v); }
+  else histTimer = setTimeout(() => pushHist(pid, v), HIST_DEBOUNCE);
+};
+
+/* ================= Eigene Dialoge (Browser-Dialoge werden in Vorschauen blockiert) ================= */
+function ask(title, placeholder, preset, cb) {
+  const m = document.getElementById('askModal');
+  document.getElementById('askTitle').textContent = title;
+  const inp = document.getElementById('askInput');
+  inp.placeholder = placeholder || ''; inp.value = preset || '';
+  m.classList.remove('hide');
+  setTimeout(() => { inp.focus(); inp.select(); }, 50);
+  window._askCb = cb;
+}
+function askOk() {
+  const v = document.getElementById('askInput').value.trim();
+  document.getElementById('askModal').classList.add('hide');
+  const cb = window._askCb; window._askCb = null;
+  if (cb && v) cb(v);
+}
+function askCancel() { document.getElementById('askModal').classList.add('hide'); window._askCb = null; }
+
+function confirmBox(text, cb) {
+  const m = document.getElementById('confModal');
+  document.getElementById('confText').textContent = text;
+  m.classList.remove('hide');
+  window._confCb = cb;
+}
+function confOk() {
+  document.getElementById('confModal').classList.add('hide');
+  const cb = window._confCb; window._confCb = null; if (cb) cb();
+}
+function confCancel() { document.getElementById('confModal').classList.add('hide'); window._confCb = null; }
+
+function toast(msg) {
+  let t = document.getElementById('toast');
+  if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; document.body.appendChild(t); }
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(window._tT); window._tT = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function delPage() {
+  if (course.pages.length < 2) return toast('Es muss mindestens eine Seite geben.');
+  confirmBox('Diese Seite wirklich löschen?', () => {
+    const [removed] = course.pages.splice(pi, 1);
+    delete editHistory[removed.id];
+    pi = Math.max(0, pi - 1); codeMode = false; renderEdit();
+  });
+}
+
+/* ================= Einfügen ================= */
+const ed = () => document.getElementById('ed');
+
+function ins(html, target) {
+  const e = target || ed(); if (!e) return;
+  if (e.id === 'ed') histCheckpoint();
+  e.focus();
+  const sel = window.getSelection();
+  const inside = sel && sel.rangeCount && e.contains(sel.anchorNode);
+  if (!inside) {   // kein Cursor im Feld -> ans Ende setzen
+    const r = document.createRange();
+    r.selectNodeContents(e); r.collapse(false);
+    sel.removeAllRanges(); sel.addRange(r);
+  }
+  let ok = false;
+  try { ok = document.execCommand('insertHTML', false, html); } catch (x) { ok = false; }
+  if (!ok) e.insertAdjacentHTML('beforeend', html);
+  if (e.id === 'ed') p_html(e.innerHTML); // nur die Hauptseite ist Teil des Kursmodells
+}
+/* ---------- Bild oder Einbettung anklicken, um Größe zu ändern ---------- */
+let selMedia = null;
+let selKind = null;
+
+function onEdClick(e) {
+  const editBtn = e.target.closest('.zi-edit');
+  if (editBtn) {
+    e.preventDefault(); e.stopPropagation();
+    openZiModalEdit(editBtn.closest('details.zi'));
+    return;
+  }
+  const xBtn = e.target.closest('.zi-x');
+  if (xBtn) {
+    e.preventDefault(); e.stopPropagation();
+    const det = xBtn.closest('details.zi');
+    confirmBox('Zusatzinfo wirklich entfernen?', () => {
+      histCheckpoint();
+      det.remove();
+      p_html(ed().innerHTML);
+    });
+    return;
+  }
+  let m = e.target.closest('img, iframe');
+  if (!m) {
+    // iFrames haben pointer-events:none, damit der Klick überhaupt beim Editor ankommt
+    // (sonst würde er im eingebetteten Inhalt verschwinden) — deshalb hier per Koordinaten prüfen
+    for (const f of ed().querySelectorAll('iframe')) {
+      const r = f.getBoundingClientRect();
+      if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) { m = f; break; }
+    }
+  }
+  if (m && ed().contains(m)) selectMedia(m);
+  else deselectMedia();
+}
+
+function selectMedia(el) {
+  deselectMedia();
+  selMedia = el;
+  el.classList.add('media-sel');
+  const bar = document.getElementById('mediaBar');
+  bar.innerHTML = `
+    <button onclick="setMediaWidth('clamp(160px, 30%, 100%)')">Klein</button>
+    <button onclick="setMediaWidth('clamp(220px, 55%, 100%)')">Mittel</button>
+    <button onclick="setMediaWidth('clamp(280px, 80%, 100%)')">Groß</button>
+    <button onclick="setMediaWidth('100%')">Voll</button>
+    <span class="mb-sep"></span>
+    <button onclick="setMediaAlign('left')" title="Linksbündig">⇤</button>
+    <button onclick="setMediaAlign('center')" title="Mittig">↔</button>
+    <span class="mb-sep"></span>
+    <button class="mb-del" onclick="deleteMedia()">Entfernen</button>
+  `;
+  positionMediaUI();
+}
+
+function deselectMedia() {
+  if (selMedia) selMedia.classList.remove('media-sel');
+  selMedia = null;
+  const bar = document.getElementById('mediaBar'), h = document.getElementById('resHandle');
+  if (bar) bar.classList.add('hide');
+  if (h) h.classList.add('hide');
+}
+
+function positionMediaUI() {
+  if (!selMedia) return;
+  const canvas = selMedia.closest('.canvas');
+  const cr = canvas.getBoundingClientRect(), mr = selMedia.getBoundingClientRect();
+  const bar = document.getElementById('mediaBar'), h = document.getElementById('resHandle');
+  bar.classList.remove('hide'); h.classList.remove('hide');
+  const top = mr.top - cr.top;
+  bar.style.left = (mr.left - cr.left) + 'px';
+  bar.style.top = Math.max(2, top - bar.offsetHeight - 6) + 'px';
+  h.style.left = (mr.right - cr.left - 9) + 'px';
+  h.style.top = (mr.bottom - cr.top - 9) + 'px';
+}
+
+function setMediaWidth(w) {
+  if (!selMedia) return;
+  histCheckpoint();
+  selMedia.style.width = w;
+  selMedia.style.height = 'auto';
+  p_html(ed().innerHTML);
+  setTimeout(positionMediaUI, 30);
+}
+
+function setMediaAlign(a) {
+  if (!selMedia) return;
+  histCheckpoint();
+  selMedia.style.display = 'block';
+  selMedia.style.marginLeft = a === 'center' ? 'auto' : '0';
+  selMedia.style.marginRight = a === 'center' ? 'auto' : 'auto';
+  if (a === 'left') selMedia.style.marginRight = 'auto';
+  p_html(ed().innerHTML);
+  setTimeout(positionMediaUI, 30);
+}
+
+function deleteMedia() {
+  if (!selMedia) return;
+  histCheckpoint();
+  const el = selMedia; deselectMedia(); el.remove();
+  p_html(ed().innerHTML);
+}
+
+/* ---------- Zusatzinfo festhalten und verschieben (wie bei den Seiten-Reitern) ---------- */
+function onEdPointerDown(e) {
+  if (e.target.closest('.zi-x') || e.target.closest('.zi-edit')) return; // Löschen/Bearbeiten sollen nicht versehentlich Verschieben auslösen
+  const summary = e.target.closest('summary');
+  if (summary && summary.parentElement.classList.contains('zi')) {
+    startZiHold(e, summary.parentElement);
+  }
+}
+
+function startZiHold(e, det) {
+  if (e.button !== undefined && e.button !== 0) return;
+  const startX = e.clientX, startY = e.clientY, pid = e.pointerId;
+  let active = false;
+
+  const activate = () => {
+    active = true;
+    histCheckpoint();
+    det.classList.add('zi-holding');
+    try { det.setPointerCapture(pid); } catch (_) {}
+  };
+  const holdTimer = setTimeout(activate, 220);
+
+  const onMove = ev => {
+    if (!active) {
+      if (Math.abs(ev.clientX - startX) > 10 || Math.abs(ev.clientY - startY) > 10) finish(false);
+      return;
+    }
+    ev.preventDefault();
+    const container = det.parentElement;
+    const kids = [...container.children].filter(k => k !== det);
+    let target = null;
+    for (const kid of kids) {
+      const r = kid.getBoundingClientRect();
+      if (ev.clientY < r.top + r.height / 2) { target = kid; break; }
+    }
+    if (target) container.insertBefore(det, target);
+    else container.appendChild(det);
+  };
+  const onUp = () => finish(active);
+  function finish(wasActive) {
+    clearTimeout(holdTimer);
+    document.removeEventListener('pointermove', onMove);
+    document.removeEventListener('pointerup', onUp);
+    document.removeEventListener('pointercancel', onUp);
+    if (wasActive) {
+      det.classList.remove('zi-holding');
+      p_html(ed().innerHTML);
+    }
+  }
+  document.addEventListener('pointermove', onMove);
+  document.addEventListener('pointerup', onUp);
+  document.addEventListener('pointercancel', onUp);
+}
+
+// Ecke ziehen, um frei zu skalieren
+(function () {
+  const h = document.getElementById('resHandle');
+  if (!h) return;
+  let start = null;
+  h.addEventListener('pointerdown', e => {
+    if (!selMedia) return;
+    e.preventDefault();
+    histCheckpoint();
+    h.setPointerCapture(e.pointerId);
+    start = { x: e.clientX, w: selMedia.getBoundingClientRect().width, max: ed().clientWidth };
+  });
+  h.addEventListener('pointermove', e => {
+    if (!start || !selMedia) return;
+    const w = Math.max(60, Math.min(start.max, start.w + (e.clientX - start.x)));
+    const pct = Math.round(w / start.max * 100);
+    selMedia.style.width = pct >= 98 ? '100%' : `clamp(140px, ${pct}%, 100%)`;
+    selMedia.style.height = 'auto';
+    positionMediaUI();
+  });
+  h.addEventListener('pointerup', e => {
+    if (!start) return;
+    start = null; h.releasePointerCapture(e.pointerId);
+    p_html(ed().innerHTML);
+  });
+})();
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.canvas')) deselectMedia();
+});
+window.addEventListener('resize', () => { if (selMedia) positionMediaUI(); });
+/* Merkt sich die letzte Markierung im Textfeld, damit die Einfügeleiste sie verlinken kann */
+let lastRange = null;
+document.addEventListener('selectionchange', () => {
+  const e = ed(); if (!e) return;
+  const s = window.getSelection();
+  if (s && s.rangeCount && e.contains(s.anchorNode)) lastRange = s.getRangeAt(0).cloneRange();
+});
+
+function linkSelection(url) {
+  const e = ed();
+  if (!e || !lastRange || lastRange.collapsed) return false;
+  histCheckpoint();
+  e.focus();
+  const s = window.getSelection(); s.removeAllRanges(); s.addRange(lastRange);
+  document.execCommand('createLink', false, url);
+  const a = e.querySelector('a[href="' + url + '"]');
+  if (a) { a.target = '_blank'; a.rel = 'noopener'; }
+  p_html(e.innerHTML);
+  lastRange = null;
+  return true;
+}
+
+/* ---------- Einfügen aus Zwischenablage (KI-Inhalte) ---------- */
+const OK_TAGS = { P:1, BR:1, DIV:1, SPAN:1, B:1, STRONG:1, I:1, EM:1, U:1, S:1, H1:1, H2:1, H3:1, H4:1, H5:1, H6:1,
+  UL:1, OL:1, LI:1, A:1, IMG:1, IFRAME:1, BLOCKQUOTE:1, CODE:1, PRE:1, TABLE:1, THEAD:1, TBODY:1, TR:1, TH:1, TD:1, HR:1, SUP:1, SUB:1, DETAILS:1, SUMMARY:1 };
+const MAP = { H1: 'H2', H5: 'H3', H6: 'H3', PRE: 'P' };
+
+// Grobe Sicherheitsprüfung für style-Werte: keine Skript-Ausführung über CSS möglich machen
+function safeStyle(v) {
+  if (!v) return '';
+  if (/javascript:|expression\(|@import|<|>/i.test(v)) return '';
+  return v;
+}
+
+function clean(html) {
+  const d = new DOMParser().parseFromString(html, 'text/html');
+  (function walk(node) {
+    [...node.childNodes].forEach(c => {
+      if (c.nodeType === 1) {
+        let tag = c.tagName;
+        if (tag === 'SCRIPT' || tag === 'META' || tag === 'LINK') return c.remove();
+        if (tag === 'STYLE') return c.remove(); // <style>-Blöcke raus, style="..."-Attribute bleiben erlaubt
+        if (!OK_TAGS[tag]) { while (c.firstChild) node.insertBefore(c.firstChild, c); return c.remove(); }
+        if (MAP[tag]) { const r = d.createElement(MAP[tag]); while (c.firstChild) r.appendChild(c.firstChild); c.replaceWith(r); c = r; tag = r.tagName; }
+        [...c.attributes].forEach(a => {
+          const nm = a.name.toLowerCase();
+          if (nm.startsWith('on')) return c.removeAttribute(a.name); // keine Event-Handler
+          const keep = nm === 'style' || nm === 'contenteditable'
+            || ((tag === 'SPAN' || tag === 'DETAILS' || tag === 'DIV') && nm === 'class')
+            || (tag === 'A' && nm === 'href') || (tag === 'IMG' && (nm === 'src' || nm === 'alt'))
+            || (tag === 'IFRAME' && (nm === 'src' || nm === 'allowfullscreen' || nm === 'loading'));
+          if (!keep) return c.removeAttribute(a.name);
+          if (nm === 'style') { const s = safeStyle(a.value); s ? c.setAttribute('style', s) : c.removeAttribute('style'); }
+        });
+        if (tag === 'A') { c.target = '_blank'; c.rel = 'noopener'; }
+        walk(c);
+      } else if (c.nodeType !== 3) c.remove();
+    });
+  })(d.body);
+  return d.body.innerHTML;
+}
+
+const bare = t => /^https?:\/\/\S+$/.test(t);
+const isYt = t => /youtu\.?be/i.test(t);
+const isImg = t => /\.(jpe?g|png|gif|webp|svg|avif)(\?\S*)?$/i.test(t);
+// Fertiger Einbettungscode, z. B. von PhET, GeoGebra, LearningApps, YouTube
+const isEmbedCode = t => /^\s*<(iframe|img|video|embed|blockquote)\b[\s\S]*>/i.test(t.trim());
+
+// Baut ein iFrame und übernimmt dabei das Seitenverhältnis aus width/height, falls vorhanden
+function makeIframe(src, w, h) {
+  const ratio = (w && h && +w > 0 && +h > 0) ? ` style="aspect-ratio:${+w}/${+h}"` : '';
+  return `<iframe src="${attr(src)}"${ratio} allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+}
+
+// Holt src, width und height aus einem eingefügten Einbettungscode
+function parseEmbed(code) {
+  const doc = new DOMParser().parseFromString(code, 'text/html');
+  const f = doc.querySelector('iframe, embed, video');
+  if (f) return { src: f.getAttribute('src'), w: f.getAttribute('width'), h: f.getAttribute('height') };
+  return null;
+}
+
+// Markdown-Grundformen, falls reiner Text eingefügt wird
+/* ---------- Einfache Formeln (LaTeX-ähnlich) in lesbare Zeichen umwandeln ---------- */
+const GREEK_MAP = {
+  Delta:'Δ', delta:'δ', alpha:'α', beta:'β', gamma:'γ', Gamma:'Γ',
+  lambda:'λ', Lambda:'Λ', mu:'μ', pi:'π', Pi:'Π', theta:'θ', Theta:'Θ',
+  omega:'ω', Omega:'Ω', sigma:'σ', Sigma:'Σ', rho:'ρ', phi:'φ', Phi:'Φ',
+  epsilon:'ε', eta:'η', tau:'τ', nu:'ν', xi:'ξ', chi:'χ', psi:'ψ', Psi:'Ψ',
+  cdot:'·', times:'×', div:'÷', pm:'±', mp:'∓',
+  leq:'≤', geq:'≥', neq:'≠', approx:'≈', equiv:'≡', propto:'∝',
+  infty:'∞', rightarrow:'→', to:'→', leftarrow:'←', Rightarrow:'⇒', Leftrightarrow:'⇔',
+  sum:'∑', int:'∫', partial:'∂', nabla:'∇', degree:'°', circ:'°'
+};
+
+function convertMathSegment(s) {
+  s = s.replace(/\\[,;!]/g, ' ');
+  s = s.replace(/\\frac\{([^{}]+)\}\{([^{}]+)\}/g, '($1)/($2)');
+  s = s.replace(/\\sqrt\{([^{}]+)\}/g, '√($1)');
+  s = s.replace(/\\sqrt\s*([A-Za-z0-9])/g, '√$1');
+  s = s.replace(/\\([A-Za-z]+)(?![A-Za-z])/g, (m, name) => GREEK_MAP[name] || m);
+  s = s.replace(/\^\{([^{}]+)\}/g, (_, g) => `<sup>${g}</sup>`);
+  s = s.replace(/\^([A-Za-z0-9+-])/g, (_, g) => `<sup>${g}</sup>`);
+  s = s.replace(/_\{([^{}]+)\}/g, (_, g) => `<sub>${g}</sub>`);
+  s = s.replace(/_([A-Za-z0-9+-])/g, (_, g) => `<sub>${g}</sub>`);
+  s = s.replace(/[{}]/g, '');
+  s = s.replace(/\\([a-zA-Z]+)/g, '$1');
+  return s;
+}
+
+// Formeln in $...$, $$...$$, \(...\), \[...\] finden, umwandeln und vor dem Escapen sichern
+function extractMath(text) {
+  const store = [];
+  const save = html => { store.push(html); return `\u0000${store.length - 1}\u0000`; };
+  let out = text.replace(/\$\$([\s\S]+?)\$\$|\\\[([\s\S]+?)\\\]/g, (_, a, b) => save(convertMathSegment((a || b).trim())));
+  out = out.replace(/\$([^$\n]+?)\$|\\\(([\s\S]+?)\\\)/g, (_, a, b) => save(convertMathSegment((a || b).trim())));
+  return { text: out, store };
+}
+
+function mdToHtml(t) {
+  return t.split(/\n{2,}/).map(blk => {
+    const l = blk.trim();
+    if (/^#{1,6}\s/.test(l)) { const lv = Math.min(l.match(/^#+/)[0].length, 3); return `<h${Math.max(lv,2)}>${esc(l.replace(/^#+\s*/, ''))}</h${Math.max(lv,2)}>`; }
+    if (/^[-*]\s/m.test(l) && l.split('\n').every(x => /^[-*]\s/.test(x.trim())))
+      return '<ul>' + l.split('\n').map(x => `<li>${inline(x.replace(/^\s*[-*]\s*/, ''))}</li>`).join('') + '</ul>';
+    if (/^\d+[.)]\s/m.test(l) && l.split('\n').every(x => /^\d+[.)]\s/.test(x.trim())))
+      return '<ol>' + l.split('\n').map(x => `<li>${inline(x.replace(/^\s*\d+[.)]\s*/, ''))}</li>`).join('') + '</ol>';
+    if (/^>\s/.test(l)) return `<blockquote>${inline(l.replace(/^>\s*/gm, ''))}</blockquote>`;
+    return `<p>${inline(l).replace(/\n/g, '<br>')}</p>`;
+  }).join('');
+}
+function inline(s) {
+  const { text, store } = extractMath(s);
+  let out = esc(text)
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|\W)\*([^*]+)\*(?=\W|$)/g, '$1<em>$2</em>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\[(.+?)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  out = out.replace(/\u0000(\d+)\u0000/g, (_, i) => store[+i]);
+  return out;
+}
+
+function onPaste(e) {
+  const target = e.currentTarget;
+  const cd = e.clipboardData;
+  // Bild aus der Zwischenablage (z. B. Bildschirmfoto)
+  const items = [...(cd.items || [])];
+  const imgItem = items.find(i => i.type && i.type.startsWith('image/'));
+  if (imgItem) {
+    e.preventDefault();
+    const f = imgItem.getAsFile();
+    if (f) insertImageFile(f, target);
+    return;
+  }
+  e.preventDefault();
+  const html = cd.getData('text/html');
+  const txt = (cd.getData('text/plain') || '').trim();
+
+  // Fertiger Einbettungscode als Text eingefügt (PhET, GeoGebra, LearningApps …)
+  if (isEmbedCode(txt)) {
+    const em = parseEmbed(txt);
+    if (em && em.src) return ins(makeIframe(em.src, em.w, em.h), target);
+    return ins(clean(txt), target);
+  }
+  if (bare(txt)) {
+    // Adresse über markiertem Text -> Markierung verlinken (nur im Haupt-Editor unterstützt)
+    if (target.id === 'ed') {
+      const s = window.getSelection();
+      if (s && s.rangeCount && !s.isCollapsed && ed().contains(s.anchorNode)) {
+        lastRange = s.getRangeAt(0).cloneRange();
+        if (linkSelection(txt)) return;
+      }
+    }
+    if (isYt(txt)) return ins(`<iframe src="https://www.youtube-nocookie.com/embed/${ytId(txt)}" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>`, target);
+    if (isImg(txt)) return ins(`<img src="${attr(txt)}" style="width:100%">`, target);
+    return ins(makeIframe(txt), target);
+  }
+  if (html && html.trim()) return ins(clean(html), target);
+  if (txt) return ins(mdToHtml(txt), target);
+}
+
+/* ---------- Bilddateien: ziehen, ablegen, einfügen ---------- */
+const MAX_DIM = 1600;      // längste Seite in Pixeln, auf die verkleinert wird
+const MAX_IMG = 4 * 1024 * 1024; // Sicherheitsgrenze für Dateien, die sich nicht verkleinern lassen (z. B. GIF)
+
+// Bild einlesen, automatisch verkleinern/komprimieren, Ergebnis (Data-URL) an cb übergeben
+function processImageFile(file, cb) {
+  if (!file.type.startsWith('image/')) return toast('Nur Bilddateien werden unterstützt.');
+
+  if (file.type === 'image/gif') {
+    if (file.size > MAX_IMG) return toast('GIF ist zu groß (über 4 MB) — bitte vorher verkleinern.');
+    const r = new FileReader();
+    r.onload = () => cb(r.result);
+    r.onerror = () => toast('Bild konnte nicht gelesen werden.');
+    r.readAsDataURL(file);
+    return;
+  }
+
+  const img = new Image();
+  const url = URL.createObjectURL(file);
+  img.onload = () => {
+    URL.revokeObjectURL(url);
+    const scale = Math.min(1, MAX_DIM / Math.max(img.width, img.height));
+    const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, w, h);
+    const keepPng = file.type === 'image/png' && hasTransparency(ctx, w, h);
+    const dataUrl = keepPng ? canvas.toDataURL('image/png') : canvas.toDataURL('image/jpeg', 0.82);
+    if (dataUrl.length > MAX_IMG) return toast('Bild ist auch verkleinert noch sehr groß — bitte ein kleineres Bild verwenden.');
+    cb(dataUrl);
+  };
+  img.onerror = () => { URL.revokeObjectURL(url); toast('Bild konnte nicht gelesen werden.'); };
+  img.src = url;
+}
+
+/* ---------- Aufklappbare Zusatzinfo (z. B. für Differenzierung E-/G-Kurs) ---------- */
+let editingZi = null;
+
+function openZiModal() {
+  editingZi = null;
+  document.getElementById('ziModalTitle').textContent = 'Zusatzinfo einfügen';
+  document.getElementById('ziSubmitBtn').textContent = 'Einfügen';
+  document.getElementById('ziTitle').value = '';
+  document.getElementById('ziBody').innerHTML = '';
+  document.getElementById('ziModal').classList.remove('hide');
+  setTimeout(() => document.getElementById('ziTitle').focus(), 50);
+}
+
+function openZiModalEdit(det) {
+  editingZi = det;
+  document.getElementById('ziModalTitle').textContent = 'Zusatzinfo bearbeiten';
+  document.getElementById('ziSubmitBtn').textContent = 'Speichern';
+  const titleEl = det.querySelector('.zi-title');
+  const bodyDiv = det.querySelector('.zi-body');
+  document.getElementById('ziTitle').value = titleEl ? titleEl.textContent.trim() : '';
+  document.getElementById('ziBody').innerHTML = bodyDiv ? bodyDiv.innerHTML : '';
+  document.getElementById('ziModal').classList.remove('hide');
+  setTimeout(() => document.getElementById('ziTitle').focus(), 50);
+}
+
+function closeZiModal() { document.getElementById('ziModal').classList.add('hide'); editingZi = null; }
+
+function insertZusatzinfo() {
+  const title = document.getElementById('ziTitle').value.trim() || 'Zusatzinfo';
+  const bodyEl = document.getElementById('ziBody');
+  const bodyHtml = bodyEl.innerHTML.trim();
+  const isEmpty = !bodyEl.textContent.trim() && !bodyEl.querySelector('img, iframe');
+  if (isEmpty) { bodyEl.focus(); return toast('Bitte einen Inhalt eingeben.'); }
+
+  if (editingZi) {
+    const det = editingZi;
+    histCheckpoint();
+    const titleEl = det.querySelector('.zi-title');
+    const bodyDiv = det.querySelector('.zi-body');
+    if (titleEl) titleEl.textContent = title;
+    if (bodyDiv) bodyDiv.innerHTML = bodyHtml;
+    editingZi = null;
+    closeZiModal();
+    p_html(ed().innerHTML);
+    return;
+  }
+
+  closeZiModal();
+  ins(`<details class="zi"><summary><span class="zi-grip" contenteditable="false">⠿</span><span class="zi-title">${esc(title)}</span><span class="zi-edit" contenteditable="false" title="Zusatzinfo bearbeiten">✎</span><span class="zi-x" contenteditable="false" title="Zusatzinfo entfernen">✕</span></summary><div class="zi-body">${bodyHtml}</div></details><p><br></p>`);
+}
+
+/* ---------- Code-Ansicht: HTML einer Seite anzeigen/bearbeiten (z. B. zum Umstyeln per KI) ---------- */
+function prettyHtml(html) {
+  return (html || '').replace(/></g, '>\n<').trim();
+}
+function toggleCodeView() {
+  if (codeMode) {
+    histCheckpoint();
+    const val = document.getElementById('edCode').value;
+    p_html(clean(val));
+  }
+  codeMode = !codeMode;
+  renderEdit();
+}
+
+function insertImageFile(file, target) {
+  processImageFile(file, dataUrl => ins(`<img src="${dataUrl}">`, target));
+}
+
+// Stichprobe auf durchsichtige Pixel, um zu entscheiden ob PNG erhalten bleiben muss
+function hasTransparency(ctx, w, h) {
+  const step = Math.max(1, Math.floor(Math.min(w, h) / 40));
+  const data = ctx.getImageData(0, 0, w, h).data;
+  for (let y = 0; y < h; y += step) {
+    for (let x = 0; x < w; x += step) {
+      if (data[(y * w + x) * 4 + 3] < 250) return true;
+    }
+  }
+  return false;
+}
+
+function onDragOver(e) {
+  e.preventDefault();
+  const has = [...(e.dataTransfer.types || [])].includes('Files');
+  if (has) e.currentTarget.classList.add('drop');
+}
+function onDragLeave(e) {
+  if (!e.currentTarget.contains(e.relatedTarget)) e.currentTarget.classList.remove('drop');
+}
+function onDrop(e) {
+  e.preventDefault();
+  const el = e.currentTarget;
+  el.classList.remove('drop');
+  const files = [...(e.dataTransfer.files || [])];
+  if (files.length) {
+    el.focus();
+    // Cursor an die Ablegestelle setzen, falls möglich
+    const r = document.caretRangeFromPoint ? document.caretRangeFromPoint(e.clientX, e.clientY) : null;
+    if (r) { const s = window.getSelection(); s.removeAllRanges(); s.addRange(r); }
+    files.filter(f => f.type.startsWith('image/')).forEach(f => insertImageFile(f, el));
+    if (!files.some(f => f.type.startsWith('image/'))) toast('Nur Bilddateien können abgelegt werden.');
+    return;
+  }
+  const txt = (e.dataTransfer.getData('text/plain') || '').trim();
+  if (!txt) return;
+  el.focus();
+  if (isEmbedCode(txt)) {
+    const em = parseEmbed(txt);
+    if (em && em.src) return ins(makeIframe(em.src, em.w, em.h), el);
+    return ins(clean(txt), el);
+  }
+  if (isYt(txt)) return ins(`<iframe src="https://www.youtube-nocookie.com/embed/${ytId(txt)}" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>`, el);
+  if (isImg(txt)) return ins(`<img src="${attr(txt)}">`, el);
+  if (bare(txt)) return ins(`<a href="${attr(txt)}" target="_blank" rel="noopener">${esc(txt)}</a>`, el);
+  ins(mdToHtml(txt), el);
+}
+
+function linkify() {
+  const e = ed(); if (!e) return;
+  const re = /(https?:\/\/[^\s<]+)/g;
+  const wk = document.createTreeWalker(e, NodeFilter.SHOW_TEXT);
+  const hits = []; let nd;
+  while (nd = wk.nextNode()) { if (nd.parentElement.closest('a')) continue; re.lastIndex = 0; if (re.test(nd.textContent)) hits.push(nd); }
+  hits.forEach(t => {
+    re.lastIndex = 0;
+    const parts = t.textContent.split(re);
+    if (parts.length < 2) return;
+    const f = document.createDocumentFragment();
+    parts.forEach(s => {
+      if (/^https?:\/\//.test(s)) { const a = document.createElement('a'); a.href = s; a.target = '_blank'; a.rel = 'noopener'; a.textContent = s; f.appendChild(a); }
+      else if (s) f.appendChild(document.createTextNode(s));
+    });
+    t.replaceWith(f);
+  });
+  p_html(e.innerHTML);
+}
+try { document.execCommand('enableObjectResizing', false, true); } catch (e) {}
+
+/* ================= Aufgaben-Editor ================= */
+let clipboardTask = null;
+
+function openTaskModal() {
+  showTaskRoot();
+  document.getElementById('taskModal').classList.remove('hide');
+}
+function closeTaskModal() { document.getElementById('taskModal').classList.add('hide'); }
+function showTaskRoot() {
+  document.getElementById('taskModalTitle').textContent = 'Aufgabe wählen';
+  document.getElementById('taskRootOpts').classList.remove('hide');
+  document.getElementById('taskTemplateOpts').classList.add('hide');
+  document.getElementById('taskBackBtn').classList.add('hide');
+}
+function showTaskTemplates() {
+  document.getElementById('taskModalTitle').textContent = 'Vorlage wählen';
+  document.getElementById('taskRootOpts').classList.add('hide');
+  document.getElementById('taskTemplateOpts').classList.remove('hide');
+  document.getElementById('taskBackBtn').classList.remove('hide');
+}
+function setTask(t) { course.pages[pi].task = newTask(t); closeTaskModal(); renderEdit(); }
+function rmTask() { confirmBox('Aufgabe entfernen?', () => { course.pages[pi].task = null; renderEdit(); }); }
+
+function copyTask() {
+  const t = course.pages[pi].task;
+  if (!t) return;
+  clipboardTask = JSON.parse(JSON.stringify(t));
+  clipboardTask._fromPage = course.pages[pi].title || 'Ohne Titel';
+  toast('Aufgabe kopiert. Auf einer anderen Seite über „Aufgabe zum Weiterkommen" einfügen.');
+}
+function pasteTask() {
+  if (!clipboardTask) return;
+  const copy = JSON.parse(JSON.stringify(clipboardTask));
+  delete copy._fromPage;
+  copy.id = uid('t');
+  course.pages[pi].task = copy;
+  closeTaskModal();
+  renderEdit();
+  toast('Aufgabe eingefügt.');
+}
+
+/* ---------- Aufgabe aus KI übernehmen ---------- */
+const AI_PROMPT = `Erzeuge eine Aufgabe für eine digitale Lektion. Antworte AUSSCHLIESSLICH mit einem JSON-Objekt, ohne Erklärung, ohne Code-Block.
+
+Wähle eines dieser Formate:
+
+Multiple Choice (genau eine richtige Antwort):
+{"type":"mc","q":"Frage?","opts":["Antwort A","Antwort B","Antwort C"],"correct":1}
+
+Mehrfachauswahl (mehrere richtige):
+{"type":"multi","q":"Frage?","opts":["A","B","C","D"],"correct":[0,2]}
+
+Wahr oder Falsch:
+{"type":"truefalse","q":"Aussage, die beurteilt werden soll.","answer":true}
+
+Kurzantwort (Schüler tippt ein Wort oder eine Zahl):
+{"type":"text","q":"Frage?","answers":["Lösung","Alternative Schreibweise"]}
+
+Lösungswort (Schüler hat das Wort woanders erfahren, z. B. im Video, auf einem Arbeitsblatt, im Unterrichtsgespräch — keine Frage nötig):
+{"type":"password","q":"Optionaler Hinweistext, woher das Wort stammt","answers":["Lösungswort"]}
+
+Zuordnen (Begriff zu Definition):
+{"type":"dragdrop","pairs":[{"term":"Begriff","def":"Definition"},{"term":"Begriff 2","def":"Definition 2"}]}
+
+Lückentext (Lückenwörter mit Sternchen markieren):
+{"type":"gap","text":"Die *Frequenz* wird in *Hertz* gemessen."}
+
+Reihenfolge (in der KORREKTEN Reihenfolge angeben):
+{"type":"order","items":["Erster Schritt","Zweiter Schritt","Dritter Schritt"]}
+
+Hinweise: "correct" ist der Index ab 0. Verwende deutsche Sprache und passe Niveau und Inhalt an folgendes Thema an:
+
+THEMA: `;
+
+function openAiImport() {
+  closeTaskModal();
+  document.getElementById('aiInput').value = '';
+  document.getElementById('aiErr').textContent = '';
+  document.getElementById('aiModal').classList.remove('hide');
+  setTimeout(() => document.getElementById('aiInput').focus(), 50);
+}
+function closeAiImport() { document.getElementById('aiModal').classList.add('hide'); }
+function backFromAiImport() { closeAiImport(); openTaskModal(); }
+
+function copyPrompt() {
+  const done = () => toast('Anleitung kopiert — jetzt in deine KI einfügen und Thema ergänzen.');
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(AI_PROMPT).then(done).catch(() => fallbackCopy(AI_PROMPT, done));
+  } else fallbackCopy(AI_PROMPT, done);
+}
+function fallbackCopy(text, cb) {
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); cb(); } catch (e) { toast('Kopieren nicht möglich — Text bitte manuell markieren.'); }
+  ta.remove();
+}
+
+// Prüft und normalisiert eine von der KI erzeugte Aufgabe
+function parseAiTask(raw) {
+  let s = raw.trim();
+  s = s.replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();  // Code-Block entfernen
+  const a = s.indexOf('{'), b = s.lastIndexOf('}');
+  if (a === -1 || b === -1) throw new Error('Kein JSON-Objekt gefunden.');
+  const o = JSON.parse(s.slice(a, b + 1));
+  const t = o.task || o;
+  if (!t.type) throw new Error('Feld "type" fehlt.');
+  const id = uid('t');
+  const str = x => String(x == null ? '' : x);
+
+  if (t.type === 'mc') {
+    if (!Array.isArray(t.opts) || t.opts.length < 2) throw new Error('"opts" braucht mindestens zwei Antworten.');
+    const c = Number(t.correct);
+    if (!(c >= 0 && c < t.opts.length)) throw new Error('"correct" liegt außerhalb der Antworten.');
+    return { id, type: 'mc', q: str(t.q), opts: t.opts.map(str), correct: c };
+  }
+  if (t.type === 'multi') {
+    if (!Array.isArray(t.opts) || t.opts.length < 3) throw new Error('"opts" braucht mindestens drei Antworten.');
+    let c = Array.isArray(t.correct) ? t.correct.map(Number) : [Number(t.correct)];
+    c = c.filter(x => x >= 0 && x < t.opts.length);
+    if (!c.length) throw new Error('"correct" enthält keine gültige Antwort.');
+    return { id, type: 'multi', q: str(t.q), opts: t.opts.map(str), correct: c };
+  }
+  if (t.type === 'truefalse') {
+    if (typeof t.answer !== 'boolean') throw new Error('"answer" muss true oder false sein.');
+    return { id, type: 'truefalse', q: str(t.q), answer: t.answer };
+  }
+  if (t.type === 'text') {
+    const ans = (Array.isArray(t.answers) ? t.answers : [t.answers]).map(str).filter(x => x.trim());
+    if (!ans.length) throw new Error('"answers" ist leer.');
+    return { id, type: 'text', q: str(t.q), answers: ans };
+  }
+  if (t.type === 'password') {
+    const ans = (Array.isArray(t.answers) ? t.answers : [t.answers]).map(str).filter(x => x.trim());
+    if (!ans.length) throw new Error('"answers" ist leer.');
+    return { id, type: 'password', q: str(t.q), answers: ans };
+  }
+  if (t.type === 'dragdrop') {
+    if (!Array.isArray(t.pairs) || t.pairs.length < 2) throw new Error('"pairs" braucht mindestens zwei Paare.');
+    return { id, type: 'dragdrop', pairs: t.pairs.map(p => ({ term: str(p.term), def: str(p.def) })) };
+  }
+  if (t.type === 'gap') {
+    const txt = str(t.text);
+    if (!/\*[^*]+\*/.test(txt)) throw new Error('Im Text fehlen mit *Sternchen* markierte Lücken.');
+    return { id, type: 'gap', text: txt };
+  }
+  if (t.type === 'order') {
+    if (!Array.isArray(t.items) || t.items.length < 2) throw new Error('"items" braucht mindestens zwei Schritte.');
+    return { id, type: 'order', items: t.items.map(str) };
+  }
+  throw new Error('Unbekannter Aufgabentyp: ' + t.type);
+}
+
+function importAiTask() {
+  const err = document.getElementById('aiErr');
+  try {
+    const t = parseAiTask(document.getElementById('aiInput').value);
+    course.pages[pi].task = t;
+    closeAiImport(); renderEdit();
+    toast('Aufgabe übernommen: ' + TN[t.type]);
+  } catch (e) {
+    err.textContent = 'Konnte nicht gelesen werden: ' + e.message;
+  }
+}
+
+const TN = { mc: 'Multiple Choice', multi: 'Mehrfachauswahl', truefalse: 'Wahr oder Falsch', text: 'Kurzantwort', password: 'Lösungswort',
+  dragdrop: 'Zuordnen', gap: 'Lückentext', order: 'Reihenfolge' };
+
+function taskEditor(t) {
+  const box = document.createElement('div');
+  box.className = 'task-box';
+  let body = '';
+  if (t.type === 'mc') {
+    body = `<label class="fld">Frage</label>
+      <input type="text" value="${attr(t.q)}" placeholder="Deine Frage" oninput="T().q=this.value">
+      <label class="fld">Antwortmöglichkeiten</label>` +
+      t.opts.map((o, i) => `<div class="row">
+        <label class="radio-lbl"><input type="radio" name="c_${t.id}" ${t.correct === i ? 'checked' : ''} onchange="T().correct=${i}"> richtig</label>
+        <input type="text" value="${attr(o)}" placeholder="Antwort ${i + 1}" oninput="T().opts[${i}]=this.value">
+        <button class="rm" onclick="rmOpt(${i})">✕</button></div>`).join('') +
+      `<button class="add-row" onclick="addOpt()">+ Antwort</button>`;
+  }
+  if (t.type === 'multi') {
+    body = `<label class="fld">Frage</label>
+      <input type="text" value="${attr(t.q)}" placeholder="Deine Frage" oninput="T().q=this.value">
+      <label class="fld">Alle richtigen Antworten ankreuzen</label>` +
+      t.opts.map((o, i) => `<div class="row">
+        <label class="radio-lbl"><input type="checkbox" ${t.correct.includes(i) ? 'checked' : ''} onchange="toggleMulti(${i},this.checked)"> richtig</label>
+        <input type="text" value="${attr(o)}" placeholder="Antwort ${i + 1}" oninput="T().opts[${i}]=this.value">
+        <button class="rm" onclick="rmMultiOpt(${i})">✕</button></div>`).join('') +
+      `<button class="add-row" onclick="addMultiOpt()">+ Antwort</button>`;
+  }
+  if (t.type === 'truefalse') {
+    body = `<label class="fld">Aussage</label>
+      <input type="text" value="${attr(t.q)}" placeholder="z. B. Ein Magnet hat immer zwei Pole." oninput="T().q=this.value">
+      <label class="fld">Richtige Antwort</label>
+      <div class="row">
+        <label class="radio-lbl"><input type="radio" name="tf_${t.id}" ${t.answer ? 'checked' : ''} onchange="T().answer=true"> Wahr</label>
+        <label class="radio-lbl"><input type="radio" name="tf_${t.id}" ${!t.answer ? 'checked' : ''} onchange="T().answer=false"> Falsch</label>
+      </div>`;
+  }
+  if (t.type === 'text') {
+    body = `<label class="fld">Frage</label>
+      <input type="text" value="${attr(t.q)}" placeholder="Deine Frage" oninput="T().q=this.value">
+      <label class="fld">Akzeptierte Antworten</label>` +
+      t.answers.map((a, i) => `<div class="row">
+        <input type="text" value="${attr(a)}" placeholder="Lösung ${i + 1}" oninput="T().answers[${i}]=this.value">
+        <button class="rm" onclick="rmAnswer(${i})">✕</button></div>`).join('') +
+      `<button class="add-row" onclick="addAnswer()">+ Alternative</button>
+      <div class="hint">Groß-/Kleinschreibung wird ignoriert. Mehrere Alternativen erlauben verschiedene Schreibweisen.</div>`;
+  }
+  if (t.type === 'password') {
+    body = `<label class="fld">Hinweistext für Schüler (optional)</label>
+      <input type="text" value="${attr(t.q)}" placeholder="z. B. Das Lösungswort wird im Video genannt." oninput="T().q=this.value">
+      <label class="fld">Lösungswort</label>` +
+      t.answers.map((a, i) => `<div class="row">
+        <input type="text" value="${attr(a)}" placeholder="Lösungswort ${i + 1}" oninput="T().answers[${i}]=this.value">
+        <button class="rm" onclick="rmAnswer(${i})">✕</button></div>`).join('') +
+      `<button class="add-row" onclick="addAnswer()">+ Alternative Schreibweise</button>
+      <div class="hint">Groß-/Kleinschreibung wird ignoriert. Ohne Hinweistext steht einfach „Gib das Lösungswort ein."</div>`;
+  }
+  if (t.type === 'dragdrop') {
+    body = `<label class="fld">Begriff und passende Definition (auch als Bild möglich)</label>` +
+      t.pairs.map((p, i) => `<div class="row pair-row" ondragover="onRowDragOver(event)" ondragleave="onRowDragLeave(event)" ondrop="onRowDrop(event, ${i})">
+        ${pairSideEditor(p.term, 'term', i)}
+        ${pairSideEditor(p.def, 'def', i)}
+        <button class="rm" onclick="rmPair(${i})">✕</button></div>`).join('') +
+      `<button class="add-row" onclick="addPair()">+ Paar</button>`;
+  }
+  if (t.type === 'gap') {
+    body = `<label class="fld">Text mit Lücken</label>
+      <textarea oninput="T().text=this.value">${esc(t.text)}</textarea>
+      <div class="hint">Lückenwörter mit *Sternchen* markieren.</div>`;
+  }
+  if (t.type === 'order') {
+    body = `<label class="fld">Richtige Reihenfolge eingeben</label>` +
+      t.items.map((it, i) => `<div class="row">
+        <input type="text" value="${attr(it)}" placeholder="Schritt ${i + 1}" oninput="T().items[${i}]=this.value">
+        <button class="rm" onclick="rmItem(${i})">✕</button></div>`).join('') +
+      `<button class="add-row" onclick="addItem()">+ Schritt</button>`;
+  }
+  body += `<div class="fb-editor-wrap">
+      <label class="fld">Rückmeldung bei richtiger Antwort <span style="font-weight:400;color:var(--faint)">(optional — z. B. Zusatzwissen als kleine Belohnung)</span></label>
+      <div class="fb-editor-hint">Erscheint direkt, wenn die Aufgabe richtig gelöst wurde. Text, Bilder und Links wie bei der Zusatzinfo einfügbar.</div>
+      <div class="editor zi-editor fb-zi" contenteditable="true" data-ph="z. B. Wusstest du, dass …?"
+           oninput="T().fbCorrect=this.innerHTML" onpaste="onPaste(event)"
+           ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">${t.fbCorrect || ''}</div>
+      <label class="fld">Rückmeldung bei falscher Antwort <span style="font-weight:400;color:var(--faint)">(optional — z. B. ein Tipp)</span></label>
+      <div class="editor zi-editor fb-zi" contenteditable="true" data-ph="z. B. ein Tipp zur Lösung"
+           oninput="T().fbWrong=this.innerHTML" onpaste="onPaste(event)"
+           ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">${t.fbWrong || ''}</div>
+    </div>`;
+  box.innerHTML = `<div class="task-head"><span class="task-type">${TN[t.type]}</span>
+    <button class="task-remove" onclick="copyTask()">Kopieren</button>
+    <button class="task-remove" onclick="rmTask()">Entfernen</button></div>${body}`;
+  return box;
+}
+
+const T = () => course.pages[pi].task;
+const addOpt = () => { T().opts.push(''); renderEdit(); };
+const rmOpt = i => { const t = T(); if (t.opts.length <= 2) return toast('Mindestens zwei Antworten nötig.'); t.opts.splice(i, 1); if (t.correct >= t.opts.length) t.correct = 0; renderEdit(); };
+const addPair = () => { T().pairs.push({ term: '', def: '' }); renderEdit(); };
+const rmPair = i => { const t = T(); if (t.pairs.length <= 2) return toast('Mindestens zwei Paare nötig.'); t.pairs.splice(i, 1); renderEdit(); };
+
+/* ---------- Bild oder Text bei Zuordnen-Paaren ---------- */
+const isImgVal = v => /^data:image\//i.test((v || '').trim()) || isImg((v || '').trim());
+
+function pairSideEditor(value, side, i) {
+  if (isImgVal(value)) {
+    return `<div class="pair-side pair-side-img">
+      <img src="${attr(value.trim())}">
+      <button class="pair-img-rm" onclick="clearPairImage(${i}, '${side}')" title="Bild entfernen">✕</button>
+    </div>`;
+  }
+  return `<div class="pair-side" ondragover="onPairDragOver(event)" ondragleave="onPairDragLeave(event)" ondrop="onPairDrop(event, ${i}, '${side}')">
+    <input type="text" value="${attr(value)}" placeholder="${side === 'term' ? 'Begriff' : 'Definition'}"
+      oninput="onPairTextInput(${i}, '${side}', this.value)" onpaste="onPairPaste(event, ${i}, '${side}')">
+  </div>`;
+}
+
+// Falls statt eines Bildes eine Bild-Adresse (data:image/... oder Bild-Link) als Text getippt
+// oder eingefügt wurde (z. B. über „Bildadresse kopieren"), sofort als Bild anzeigen.
+function onPairTextInput(i, side, value) {
+  T().pairs[i][side] = value;
+  if (isImgVal(value)) renderEdit();
+}
+
+function setPairImage(i, side, file) {
+  processImageFile(file, dataUrl => { T().pairs[i][side] = dataUrl; renderEdit(); });
+}
+function clearPairImage(i, side) { T().pairs[i][side] = ''; renderEdit(); }
+
+function onPairPaste(e, i, side) {
+  const img = [...(e.clipboardData.items || [])].find(it => it.type && it.type.startsWith('image/'));
+  if (!img) return; // normaler Text-Paste läuft ganz normal weiter
+  e.preventDefault();
+  const file = img.getAsFile();
+  if (file) setPairImage(i, side, file);
+}
+
+function onPairDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drop'); }
+function onPairDragLeave(e) { e.currentTarget.classList.remove('drop'); }
+function onPairDrop(e, i, side) {
+  e.preventDefault(); e.currentTarget.classList.remove('drop');
+  dropImageOnPair(e, i, side);
+}
+
+// Auffangnetz für die ganze Zeile: trifft automatisch das nähere Feld (links = Begriff, rechts = Definition)
+function onRowDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('row-drop'); }
+function onRowDragLeave(e) { e.currentTarget.classList.remove('row-drop'); }
+function onRowDrop(e, i) {
+  e.preventDefault(); e.currentTarget.classList.remove('row-drop');
+  const r = e.currentTarget.getBoundingClientRect();
+  const side = (e.clientX - r.left) < r.width / 2 ? 'term' : 'def';
+  dropImageOnPair(e, i, side);
+}
+
+function dropImageOnPair(e, i, side) {
+  const files = [...(e.dataTransfer.files || [])].filter(f => f.type.startsWith('image/'));
+  if (files.length) return setPairImage(i, side, files[0]);
+  const txt = (e.dataTransfer.getData('text/uri-list') || e.dataTransfer.getData('text/plain') || '').trim();
+  if (txt && isImg(txt)) { T().pairs[i][side] = txt; renderEdit(); }
+  else toast('Bitte ein Bild oder einen Bild-Link hierher ziehen.');
+}
+const addItem = () => { T().items.push(''); renderEdit(); };
+const rmItem = i => { const t = T(); if (t.items.length <= 2) return toast('Mindestens zwei Schritte nötig.'); t.items.splice(i, 1); renderEdit(); };
+
+const addMultiOpt = () => { T().opts.push(''); renderEdit(); };
+const rmMultiOpt = i => {
+  const t = T(); if (t.opts.length <= 3) return toast('Mindestens drei Antworten nötig.');
+  t.opts.splice(i, 1);
+  t.correct = t.correct.filter(x => x !== i).map(x => x > i ? x - 1 : x);
+  if (!t.correct.length) t.correct = [0];
+  renderEdit();
+};
+const toggleMulti = (i, on) => {
+  const t = T();
+  if (on) { if (!t.correct.includes(i)) t.correct.push(i); }
+  else { if (t.correct.length <= 1) { toast('Mindestens eine richtige Antwort nötig.'); return renderEdit(); } t.correct = t.correct.filter(x => x !== i); }
+};
+const addAnswer = () => { T().answers.push(''); renderEdit(); };
+const rmAnswer = i => { const t = T(); if (t.answers.length <= 1) return toast('Mindestens eine Lösung nötig.'); t.answers.splice(i, 1); renderEdit(); };
+
+/* ================= Schüleransicht ================= */
+function renderProgress() {
+  const el = document.getElementById('progress');
+  const atSummary = playIdx >= course.pages.length;
+  el.innerHTML = course.pages.map((_, i) =>
+    `<i class="${i < playIdx || atSummary ? 'done' : i === playIdx ? 'now' : ''}"></i>`).join('');
+}
+
+function taskScore() {
+  const tasks = course.pages.filter(p => p.task).map(p => p.task);
+  const total = tasks.length;
+  const firstTry = tasks.filter(t => !wrongTries[t.id]).length;
+  const totalWrong = tasks.reduce((sum, t) => sum + (wrongTries[t.id] || 0), 0);
+  return { total, firstTry, totalWrong };
+}
+
+function renderPlay() {
+  if (playIdx >= course.pages.length) return renderSummary();
+  const p = course.pages[playIdx];
+  const w = document.getElementById('play');
+  const done = !p.task || solved[p.id];
+  const last = playIdx === course.pages.length - 1;
+  w.innerHTML = `
+    <div class="sheet">
+      ${p.title ? `<h1>${esc(p.title)}</h1>` : ''}
+      <div class="article">${p.html || ''}</div>
+      ${p.task ? '<div class="task" id="taskArea"></div>' : ''}
+    </div>
+    <div class="nav"><div class="nav-inner">
+      ${playIdx > 0 ? '<button onclick="go(-1)">Zurück</button>' : ''}
+      <span class="count">${playIdx + 1}/${course.pages.length}</span>
+      <button class="main" onclick="go(1)" ${!done ? 'disabled' : ''}>${last ? 'Auswertung ansehen' : 'Weiter'}</button>
+    </div>
+    ${!done ? '<div class="locked-note">Löse die Aufgabe, um fortzufahren.</div>' : ''}</div>
+  `;
+  if (p.task) renderTask(p, document.getElementById('taskArea'));
+  renderProgress();
+  document.getElementById('courseTitle').value = course.title;
+}
+
+function renderSummary() {
+  const w = document.getElementById('play');
+  const { total, firstTry, totalWrong } = taskScore();
+  w.innerHTML = `
+    <div class="sheet">
+      <h1>Auswertung</h1>
+      ${course.endHtml ? `<div class="article">${course.endHtml}</div>` : ''}
+      <div class="score-box">
+        ${total > 0 ? `
+          <div class="score-row"><span>Aufgaben bearbeitet</span><strong>${total}</strong></div>
+          <div class="score-row"><span>Beim ersten Versuch richtig</span><strong>${firstTry} von ${total}</strong></div>
+          <div class="score-row"><span>Falsche Versuche insgesamt</span><strong>${totalWrong}</strong></div>
+        ` : `<p class="score-empty">Diese Lektion enthielt keine Aufgaben zum Auswerten.</p>`}
+      </div>
+    </div>
+    <div class="nav"><div class="nav-inner">
+      <button onclick="go(-1)">Zurück zur Lektion</button>
+      <span class="count">Abgeschlossen</span>
+    </div></div>
+  `;
+  renderProgress();
+  document.getElementById('courseTitle').value = course.title;
+}
+
+function go(d) {
+  const j = playIdx + d;
+  if (j < 0 || j > course.pages.length) return;
+  playIdx = j; renderPlay(); window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function done(pid) { solved[pid] = true; renderPlayNav(); }
+function wrong(tid) { wrongTries[tid] = (wrongTries[tid] || 0) + 1; }
+function renderPlayNav() {
+  const p = course.pages[playIdx];
+  const btn = document.querySelector('.nav .main');
+  const last = playIdx === course.pages.length - 1;
+  if (btn) { btn.disabled = false; btn.textContent = last ? 'Auswertung ansehen' : 'Weiter'; }
+  const note = document.querySelector('.locked-note'); if (note) note.remove();
+}
+
+function renderTask(page, host) {
+  const t = page.task;
+  const was = !!solved[page.id];   // in dieser Sitzung bereits gelöst
+
+  if (t.type === 'mc') {
+    host.innerHTML = `<p class="task-q">${esc(t.q)}</p><div id="o_${t.id}"></div><div class="fb" id="f_${t.id}"></div><div id="fx_${t.id}"></div>`;
+    const wrap = document.getElementById('o_' + t.id), fb = document.getElementById('f_' + t.id), fx = document.getElementById('fx_' + t.id);
+    t.opts.forEach((o, i) => {
+      const b = document.createElement('button');
+      b.className = 'opt'; b.textContent = o;
+      if (was) { b.disabled = true; if (i === t.correct) b.classList.add('ok'); }
+      b.onclick = () => {
+        if (i === t.correct) {
+          b.classList.add('ok'); fb.textContent = 'Richtig.'; fb.className = 'fb ok'; fx.innerHTML = fbExtraHtml(t, true);
+          wrap.querySelectorAll('.opt').forEach(x => x.disabled = true); done(page.id);
+        } else { b.classList.add('no'); fb.textContent = 'Noch nicht richtig.'; fb.className = 'fb no'; fx.innerHTML = fbExtraHtml(t, false); wrong(t.id); }
+      };
+      wrap.appendChild(b);
+    });
+    if (was) { fb.textContent = 'Richtig.'; fb.className = 'fb ok'; fx.innerHTML = fbExtraHtml(t, true); }
+  }
+
+  if (t.type === 'multi') {
+    host.innerHTML = `<p class="task-q">${esc(t.q)}</p><div id="o_${t.id}"></div>
+      <button class="check" id="k_${t.id}" ${was ? 'disabled' : ''}>Prüfen</button><div class="fb" id="f_${t.id}"></div><div id="fx_${t.id}"></div>`;
+    const wrap = document.getElementById('o_' + t.id), fb = document.getElementById('f_' + t.id), kb = document.getElementById('k_' + t.id), fx = document.getElementById('fx_' + t.id);
+    const picked = new Set(was ? t.correct : []);
+    t.opts.forEach((o, i) => {
+      const b = document.createElement('button');
+      b.className = 'opt' + (was && t.correct.includes(i) ? ' ok' : '');
+      b.textContent = o; b.disabled = was;
+      b.onclick = () => {
+        if (picked.has(i)) { picked.delete(i); b.classList.remove('sel'); }
+        else { picked.add(i); b.classList.add('sel'); }
+      };
+      wrap.appendChild(b);
+    });
+    if (was) { fb.textContent = 'Richtig.'; fb.className = 'fb ok'; fx.innerHTML = fbExtraHtml(t, true); }
+    kb.onclick = () => {
+      const ok = picked.size === t.correct.length && [...picked].every(i => t.correct.includes(i));
+      wrap.querySelectorAll('.opt').forEach((b, i) => {
+        b.classList.remove('sel', 'ok', 'no');
+        if (picked.has(i)) b.classList.add(t.correct.includes(i) ? 'ok' : 'no');
+      });
+      if (ok) {
+        fb.textContent = 'Richtig.'; fb.className = 'fb ok'; fx.innerHTML = fbExtraHtml(t, true); kb.disabled = true;
+        wrap.querySelectorAll('.opt').forEach(b => b.disabled = true); done(page.id);
+      } else { fb.textContent = 'Noch nicht richtig — prüfe deine Auswahl.'; fb.className = 'fb no'; fx.innerHTML = fbExtraHtml(t, false); wrong(t.id); }
+    };
+  }
+
+  if (t.type === 'truefalse') {
+    host.innerHTML = `<p class="task-q">${esc(t.q)}</p><div id="o_${t.id}"></div><div class="fb" id="f_${t.id}"></div><div id="fx_${t.id}"></div>`;
+    const wrap = document.getElementById('o_' + t.id), fb = document.getElementById('f_' + t.id), fx = document.getElementById('fx_' + t.id);
+    [['Wahr', true], ['Falsch', false]].forEach(([label, val]) => {
+      const b = document.createElement('button');
+      b.className = 'opt'; b.textContent = label;
+      if (was) { b.disabled = true; if (val === t.answer) b.classList.add('ok'); }
+      b.onclick = () => {
+        if (val === t.answer) {
+          b.classList.add('ok'); fb.textContent = 'Richtig.'; fb.className = 'fb ok'; fx.innerHTML = fbExtraHtml(t, true);
+          wrap.querySelectorAll('.opt').forEach(x => x.disabled = true); done(page.id);
+        } else { b.classList.add('no'); fb.textContent = 'Noch nicht richtig.'; fb.className = 'fb no'; fx.innerHTML = fbExtraHtml(t, false); wrong(t.id); }
+      };
+      wrap.appendChild(b);
+    });
+    if (was) { fb.textContent = 'Richtig.'; fb.className = 'fb ok'; fx.innerHTML = fbExtraHtml(t, true); }
+  }
+
+  if (t.type === 'text') {
+    host.innerHTML = `<p class="task-q">${esc(t.q)}</p>
+      <input type="text" class="answer-in" id="a_${t.id}" placeholder="Deine Antwort"
+        value="${was ? attr(t.answers[0]) : ''}" ${was ? 'disabled' : ''} autocomplete="off">
+      <button class="check" id="k_${t.id}" ${was ? 'disabled' : ''}>Prüfen</button><div class="fb" id="f_${t.id}"></div><div id="fx_${t.id}"></div>`;
+    const inp = document.getElementById('a_' + t.id), fb = document.getElementById('f_' + t.id), kb = document.getElementById('k_' + t.id), fx = document.getElementById('fx_' + t.id);
+    if (was) { inp.classList.add('ok'); fb.textContent = 'Richtig.'; fb.className = 'fb ok'; fx.innerHTML = fbExtraHtml(t, true); }
+    const chk = () => {
+      const v = inp.value.trim().toLowerCase();
+      const ok = v !== '' && t.answers.some(a => a.trim().toLowerCase() === v);
+      inp.classList.remove('ok', 'no'); inp.classList.add(ok ? 'ok' : 'no');
+      if (ok) { fb.textContent = 'Richtig.'; fb.className = 'fb ok'; fx.innerHTML = fbExtraHtml(t, true); inp.disabled = true; kb.disabled = true; done(page.id); }
+      else { fb.textContent = 'Noch nicht richtig.'; fb.className = 'fb no'; fx.innerHTML = fbExtraHtml(t, false); wrong(t.id); }
+    };
+    kb.onclick = chk;
+    inp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); chk(); } };
+  }
+
+  if (t.type === 'password') {
+    host.innerHTML = `<p class="task-q">${esc(t.q || 'Gib das Lösungswort ein.')}</p>
+      <input type="text" class="answer-in" id="a_${t.id}" placeholder="Lösungswort"
+        value="${was ? attr(t.answers[0]) : ''}" ${was ? 'disabled' : ''} autocomplete="off">
+      <button class="check" id="k_${t.id}" ${was ? 'disabled' : ''}>Prüfen</button><div class="fb" id="f_${t.id}"></div><div id="fx_${t.id}"></div>`;
+    const inp = document.getElementById('a_' + t.id), fb = document.getElementById('f_' + t.id), kb = document.getElementById('k_' + t.id), fx = document.getElementById('fx_' + t.id);
+    if (was) { inp.classList.add('ok'); fb.textContent = 'Richtig.'; fb.className = 'fb ok'; fx.innerHTML = fbExtraHtml(t, true); }
+    const chk = () => {
+      const v = inp.value.trim().toLowerCase();
+      const ok = v !== '' && t.answers.some(a => a.trim().toLowerCase() === v);
+      inp.classList.remove('ok', 'no'); inp.classList.add(ok ? 'ok' : 'no');
+      if (ok) { fb.textContent = 'Richtig.'; fb.className = 'fb ok'; fx.innerHTML = fbExtraHtml(t, true); inp.disabled = true; kb.disabled = true; done(page.id); }
+      else { fb.textContent = 'Noch nicht richtig — Lösungswort prüfen.'; fb.className = 'fb no'; fx.innerHTML = fbExtraHtml(t, false); wrong(t.id); }
+    };
+    kb.onclick = chk;
+    inp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); chk(); } };
+  }
+
+  if (t.type === 'dragdrop') {
+    host.innerHTML = `<p class="task-q">Ordne die Begriffe den Definitionen zu.</p>
+      <div class="dd"><div id="c_${t.id}"></div><div id="s_${t.id}"></div></div>
+      <button class="check" id="k_${t.id}">Prüfen</button><div class="fb" id="f_${t.id}"></div><div id="fx_${t.id}"></div>`;
+    const terms = was ? t.pairs.map((p, i) => ({ i, text: p.term })) : shuffle(t.pairs.map((p, i) => ({ i, text: p.term })));
+    const cw = document.getElementById('c_' + t.id), sw = document.getElementById('s_' + t.id);
+    const fb = document.getElementById('f_' + t.id), kb = document.getElementById('k_' + t.id), fx = document.getElementById('fx_' + t.id);
+    const put = {}; let sel = null;
+    if (was) t.pairs.forEach((_, i) => put[i] = i);
+    const draw = () => {
+      cw.innerHTML = ''; sw.innerHTML = '';
+      terms.forEach(tm => {
+        const c = document.createElement('div');
+        c.className = 'chip' + (sel === tm.i ? ' sel' : '') + (Object.values(put).includes(tm.i) ? ' used' : '');
+        c.innerHTML = isImgVal(tm.text) ? `<img src="${attr(tm.text.trim())}">` : esc(tm.text);
+        if (!was) c.onclick = () => { sel = sel === tm.i ? null : tm.i; draw(); };
+        cw.appendChild(c);
+      });
+      t.pairs.forEach((p, si) => {
+        const s = document.createElement('div');
+        s.className = 'slot' + (was ? ' ok' : '');
+        const cur = put[si] != null ? t.pairs[put[si]].term : '';
+        const defHtml = isImgVal(p.def) ? `<img src="${attr(p.def.trim())}">` : esc(p.def);
+        const curHtml = cur ? (isImgVal(cur) ? `<img src="${attr(cur.trim())}">` : esc(cur)) : '';
+        s.innerHTML = `<div class="d">${defHtml}</div>${curHtml ? `<div class="a">${curHtml}</div>` : ''}`;
+        if (!was) s.onclick = () => {
+          if (sel != null) { Object.keys(put).forEach(k => { if (put[k] === sel) delete put[k]; }); put[si] = sel; sel = null; }
+          else if (put[si] != null) delete put[si];
+          draw();
+        };
+        sw.appendChild(s);
+      });
+    };
+    draw();
+    if (was) { kb.disabled = true; fb.textContent = 'Alles richtig zugeordnet.'; fb.className = 'fb ok'; fx.innerHTML = fbExtraHtml(t, true); }
+    kb.onclick = () => {
+      let all = true;
+      sw.querySelectorAll('.slot').forEach((s, si) => {
+        const ok = put[si] === si; s.classList.remove('ok', 'no'); s.classList.add(ok ? 'ok' : 'no'); if (!ok) all = false;
+      });
+      if (all) { fb.textContent = 'Alles richtig zugeordnet.'; fb.className = 'fb ok'; fx.innerHTML = fbExtraHtml(t, true); kb.disabled = true; done(page.id); }
+      else { fb.textContent = 'Noch nicht alles richtig.'; fb.className = 'fb no'; fx.innerHTML = fbExtraHtml(t, false); wrong(t.id); }
+    };
+  }
+
+  if (t.type === 'gap') {
+    const segs = parseGaps(t.text);
+    let bi = 0;
+    host.innerHTML = `<p class="task-q">Fülle die Lücken.</p><p>` +
+      segs.map(s => s.blank
+        ? `<input class="gap-in${was ? ' ok' : ''}" id="g_${t.id}_${bi}" value="${was ? attr(s.text) : ''}" ${was ? 'disabled' : ''} autocomplete="off">${bi++, ''}`
+        : esc(s.text)).join('') +
+      `</p><button class="check" id="k_${t.id}" ${was ? 'disabled' : ''}>Prüfen</button><div class="fb" id="f_${t.id}"></div><div id="fx_${t.id}"></div>`;
+    const fb = document.getElementById('f_' + t.id), kb = document.getElementById('k_' + t.id), fx = document.getElementById('fx_' + t.id);
+    if (was) { fb.textContent = 'Alles richtig.'; fb.className = 'fb ok'; fx.innerHTML = fbExtraHtml(t, true); }
+    kb.onclick = () => {
+      let all = true;
+      segs.filter(s => s.blank).forEach((s, i) => {
+        const inp = document.getElementById('g_' + t.id + '_' + i);
+        const ok = inp.value.trim().toLowerCase() === s.text.trim().toLowerCase();
+        inp.classList.remove('ok', 'no'); inp.classList.add(ok ? 'ok' : 'no'); if (!ok) all = false;
+      });
+      if (all) {
+        fb.textContent = 'Alles richtig.'; fb.className = 'fb ok'; fx.innerHTML = fbExtraHtml(t, true); kb.disabled = true;
+        segs.filter(s => s.blank).forEach((s, i) => document.getElementById('g_' + t.id + '_' + i).disabled = true);
+        done(page.id);
+      } else { fb.textContent = 'Noch nicht alles richtig.'; fb.className = 'fb no'; fx.innerHTML = fbExtraHtml(t, false); wrong(t.id); }
+    };
+  }
+
+  if (t.type === 'order') {
+    host.innerHTML = `<p class="task-q">Bringe die Schritte in die richtige Reihenfolge.</p>
+      <div id="l_${t.id}"></div><button class="check" id="k_${t.id}" ${was ? 'disabled' : ''}>Prüfen</button><div class="fb" id="f_${t.id}"></div><div id="fx_${t.id}"></div>`;
+    let cur = was ? t.items.map((x, i) => ({ i, text: x })) : shuffle(t.items.map((x, i) => ({ i, text: x })));
+    const lw = document.getElementById('l_' + t.id), fb = document.getElementById('f_' + t.id), kb = document.getElementById('k_' + t.id), fx = document.getElementById('fx_' + t.id);
+    const draw = () => {
+      lw.innerHTML = '';
+      cur.forEach((it, idx) => {
+        const r = document.createElement('div');
+        r.className = 'ord' + (was ? ' ok' : '');
+        r.innerHTML = `<span class="grip">${idx + 1}</span><span class="txt">${esc(it.text)}</span>` +
+          (was ? '' : `<span class="mv"><button ${idx === 0 ? 'disabled' : ''}>▲</button><button ${idx === cur.length - 1 ? 'disabled' : ''}>▼</button></span>`);
+        if (!was) {
+          const [up, dn] = r.querySelectorAll('.mv button');
+          up.onclick = () => { [cur[idx - 1], cur[idx]] = [cur[idx], cur[idx - 1]]; draw(); };
+          dn.onclick = () => { [cur[idx + 1], cur[idx]] = [cur[idx], cur[idx + 1]]; draw(); };
+          r.draggable = true;
+          r.ondragstart = e => e.dataTransfer.setData('text/plain', idx);
+          r.ondragover = e => e.preventDefault();
+          r.ondrop = e => { e.preventDefault(); const f = +e.dataTransfer.getData('text/plain'); const [m] = cur.splice(f, 1); cur.splice(idx, 0, m); draw(); };
+        }
+        lw.appendChild(r);
+      });
+    };
+    draw();
+    if (was) { fb.textContent = 'Richtige Reihenfolge.'; fb.className = 'fb ok'; fx.innerHTML = fbExtraHtml(t, true); }
+    kb.onclick = () => {
+      let all = true;
+      lw.querySelectorAll('.ord').forEach((r, idx) => {
+        const ok = cur[idx].i === idx; r.classList.remove('ok', 'no'); r.classList.add(ok ? 'ok' : 'no'); if (!ok) all = false;
+      });
+      if (all) { fb.textContent = 'Richtige Reihenfolge.'; fb.className = 'fb ok'; fx.innerHTML = fbExtraHtml(t, true); kb.disabled = true; done(page.id); }
+      else { fb.textContent = 'Noch nicht richtig.'; fb.className = 'fb no'; fx.innerHTML = fbExtraHtml(t, false); wrong(t.id); }
+    };
+  }
+}
+
+/* ================= Hilfen ================= */
+function esc(s) { return (s || '').replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
+function attr(s) { return (s || '').replace(/"/g, '&quot;'); }
+// Rückmeldungs-Zusatztext (Zusatzwissen bei richtig / Tipp bei falsch) für die Schüleransicht aufbereiten
+function fbExtraHtml(t, ok) {
+  const html = ok ? (t && t.fbCorrect) : (t && t.fbWrong);
+  if (!html) return '';
+  const bare = html.replace(/<[^>]*>/g, '').trim();
+  if (!bare && !/<img\b|<iframe\b/i.test(html)) return '';
+  return `<div class="fb-extra ${ok ? 'good' : 'hint'}">${html}</div>`;
+}
+function ytId(v) { if (!v) return ''; const m = v.match(/(?:youtu\.be\/|v=|embed\/|shorts\/)([A-Za-z0-9_-]{6,})/); return m ? m[1] : v.trim(); }
+function shuffle(a) { const c = [...a]; for (let i = c.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [c[i], c[j]] = [c[j], c[i]]; } return c; }
+function parseGaps(t) {
+  const out = []; const re = /\*(.+?)\*/g; let last = 0, m;
+  while ((m = re.exec(t))) { if (m.index > last) out.push({ blank: false, text: t.slice(last, m.index) }); out.push({ blank: true, text: m[1] }); last = re.lastIndex; }
+  if (last < t.length) out.push({ blank: false, text: t.slice(last) });
+  return out;
+}
+
+/* ================= Speichern / Laden / Export ================= */
+function dl(name, content, type) {
+  const b = new Blob([content], { type }), u = URL.createObjectURL(b);
+  const a = document.createElement('a'); a.href = u; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(u);
+}
+const slug = s => (s || 'lernstrecke').toLowerCase().replace(/[^a-z0-9äöüß]+/gi, '-').replace(/^-|-$/g, '');
+// Ältere Kursdateien auf das aktuelle Format bringen
+function normTask(t) {
+  if (!t) return null;
+  const o = { id: t.id || uid('t'), type: t.type, fbCorrect: t.fbCorrect || '', fbWrong: t.fbWrong || '' };
+  if (t.type === 'mc') {
+    o.q = t.q !== undefined ? t.q : (t.question || '');
+    o.opts = t.opts || t.options || ['', ''];
+    o.correct = t.correct !== undefined ? t.correct : (t.correctIndex || 0);
+  } else if (t.type === 'multi') {
+    o.q = t.q || ''; o.opts = t.opts || ['', '', ''];
+    o.correct = Array.isArray(t.correct) ? t.correct : [0];
+  } else if (t.type === 'truefalse') {
+    o.q = t.q || ''; o.answer = t.answer !== false;
+  } else if (t.type === 'text') {
+    o.q = t.q || ''; o.answers = Array.isArray(t.answers) ? t.answers : [''];
+  } else if (t.type === 'password') {
+    o.q = t.q || ''; o.answers = Array.isArray(t.answers) ? t.answers : [''];
+  } else if (t.type === 'dragdrop') o.pairs = t.pairs || [{ term: '', def: '' }, { term: '', def: '' }];
+  else if (t.type === 'gap') o.text = t.text || '';
+  else if (t.type === 'order') o.items = t.items || [];
+  else return null;
+  return o;
+}
+
+function applyCourse(d) {
+  const endHtml = d.endHtml !== undefined ? d.endHtml
+    : (d.summaryText ? `<p>${esc(d.summaryText).replace(/\n/g, '<br>')}</p>` : '');
+  course = { title: d.title || 'Lernstrecke', endHtml, pages: (d.pages || []).map(p => ({
+    id: p.id || uid('p'), title: p.title || '',
+    html: p.html !== undefined ? p.html : (p.blocks ? p.blocks.map(b => b.html || '').join('') : ''),
+    task: normTask(p.task || p.gate)
+  })) };
+  if (!course.pages.length) course.pages = [newPage()];
+  pi = 0; codeMode = false; editingEnd = false;
+  editHistory = {}; clearTimeout(histTimer); histFlushNow = false;
+  document.getElementById('courseTitle').value = course.title;
+  setMode('edit');
+}
+
+// Kursdaten aus einer bereits exportierten Lektionsdatei herausholen
+function extractFromHTML(text) {
+  const doc = new DOMParser().parseFromString(text, 'text/html');
+  const tag = doc.getElementById('lektionsdaten');
+  if (tag) return JSON.parse(tag.textContent.replace(/\\u003c/g, '<'));
+  // ältere Exporte: course = {...} im Skript
+  const m = text.match(/course\s*=\s*(\{[\s\S]*?\});\s*\n\s*mode\s*=/);
+  if (m) return JSON.parse(m[1]);
+  throw new Error('keine Lektionsdaten gefunden');
+}
+
+function loadCourse(e) {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    const text = r.result;
+    try {
+      const isHtml = /\.html?$/i.test(f.name) || /^\s*<!DOCTYPE html/i.test(text);
+      applyCourse(isHtml ? extractFromHTML(text) : JSON.parse(text));
+      toast('Lektion geladen — du kannst weiterarbeiten.');
+    } catch (x) {
+      toast('Datei konnte nicht gelesen werden.');
+    }
+  };
+  r.readAsText(f); e.target.value = '';
+}
+
+function exportStudent() {
+  dl(slug(course.title) + '.html', buildStudentHTML(), 'text/html');
+}
+
+function buildStudentHTML() {
+  const css = document.querySelector('style').textContent;
+  const js = document.querySelector('script').textContent;
+  const data = JSON.stringify(course);
+  return `<!DOCTYPE html>
+<html lang="de"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>${esc(course.title)}</title>
+<style>${css}
+.topbar-actions,.page-tabs{display:none!important}
+.course-title{pointer-events:none}
+#play{display:block}
+</style></head><body>
+<div class="topbar">
+  <div class="topbar-inner"><input class="course-title" id="courseTitle" readonly value="${attr(course.title)}"></div>
+  <div class="progress" id="progress"></div>
+</div>
+<main><div id="edit" style="display:none"></div><div id="play"></div></main>
+<script type="application/json" id="lektionsdaten">${data.replace(/</g, '\\u003c')}<\/script>
+<script>
+${js}
+course = JSON.parse(document.getElementById('lektionsdaten').textContent);
+mode='play'; playIdx=0; solved={};
+document.getElementById('courseTitle').value = course.title;
+renderPlay();
+<\/script></body></html>`;
+}
+
+/* ================= Start ================= */
+// Sicherheitsnetz: verhindert, dass ein Ablegen an einer nicht vorgesehenen Stelle
+// die Datei als neue Seite/Vollbild öffnet — greift nur, wenn kein spezifisches Ziel schon reagiert hat
+document.addEventListener('dragover', e => { if (!e.defaultPrevented) e.preventDefault(); });
+document.addEventListener('drop', e => { if (!e.defaultPrevented) e.preventDefault(); });
+
+if (document.getElementById('tabs')) renderEdit();
+
+course = JSON.parse(document.getElementById('lektionsdaten').textContent);
+mode='play'; playIdx=0; solved={};
+document.getElementById('courseTitle').value = course.title;
+renderPlay();
+</script></body></html>
