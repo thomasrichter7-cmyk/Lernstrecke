@@ -138,6 +138,9 @@
     border-radius: 8px; padding: 0.6rem 0.75rem; background: var(--bg);
   }
   .zi-editor:focus { outline: none; border-color: var(--accent); }
+  .fb-zi { min-height: 4rem; }
+  .fb-editor-wrap { margin-top: 1rem; padding-top: 0.9rem; border-top: 1px dashed var(--line); }
+  .fb-editor-hint { font-size: 0.8rem; color: var(--faint); margin: -0.15rem 0 0.7rem; }
   .editor:focus { outline: none; }
   .editor:empty:before { content: attr(data-ph); color: var(--faint); }
   .editor > *:first-child { margin-top: 0; }
@@ -348,6 +351,12 @@
   .fb { font-size: 0.9rem; margin-top: 0.7rem; min-height: 1.2em; }
   .fb.ok { color: var(--accent); }
   .fb.no { color: var(--warn); }
+  .fb-extra { margin-top: 0.6rem; padding: 0.7rem 0.9rem; border-radius: 8px; font-size: 0.92rem; line-height: 1.55; }
+  .fb-extra.good { background: var(--accent-soft); border: 1px solid #9fbdb0; color: var(--ink); }
+  .fb-extra.hint { background: #fdf1ee; border: 1px solid #eab7a8; color: var(--ink); }
+  .fb-extra p:first-child { margin-top: 0; }
+  .fb-extra p:last-child { margin-bottom: 0; }
+  .fb-extra img { max-width: 100%; height: auto; border-radius: 6px; }
   .check {
     margin-top: 0.9rem; padding: 0.7rem 1.3rem; background: var(--ink); color: #fff;
     border: none; border-radius: 8px; cursor: pointer; font-size: 0.95rem; font-family: inherit;
@@ -599,14 +608,14 @@ let n = 1;
 const uid = p => p + '_' + (n++) + '_' + Math.random().toString(36).slice(2, 6);
 
 const newTask = t => ({
-  mc:        () => ({ id: uid('t'), type: 'mc', q: '', opts: ['', ''], correct: 0 }),
-  multi:     () => ({ id: uid('t'), type: 'multi', q: '', opts: ['', '', ''], correct: [0] }),
-  truefalse: () => ({ id: uid('t'), type: 'truefalse', q: '', answer: true }),
-  text:      () => ({ id: uid('t'), type: 'text', q: '', answers: [''] }),
-  password:  () => ({ id: uid('t'), type: 'password', q: '', answers: [''] }),
-  dragdrop:  () => ({ id: uid('t'), type: 'dragdrop', pairs: [{ term: '', def: '' }, { term: '', def: '' }] }),
-  gap:       () => ({ id: uid('t'), type: 'gap', text: 'Die *Frequenz* wird in *Hertz* gemessen.' }),
-  order:     () => ({ id: uid('t'), type: 'order', items: ['Erster Schritt', 'Zweiter Schritt', 'Dritter Schritt'] })
+  mc:        () => ({ id: uid('t'), type: 'mc', q: '', opts: ['', ''], correct: 0, fbCorrect: '', fbWrong: '' }),
+  multi:     () => ({ id: uid('t'), type: 'multi', q: '', opts: ['', '', ''], correct: [0], fbCorrect: '', fbWrong: '' }),
+  truefalse: () => ({ id: uid('t'), type: 'truefalse', q: '', answer: true, fbCorrect: '', fbWrong: '' }),
+  text:      () => ({ id: uid('t'), type: 'text', q: '', answers: [''], fbCorrect: '', fbWrong: '' }),
+  password:  () => ({ id: uid('t'), type: 'password', q: '', answers: [''], fbCorrect: '', fbWrong: '' }),
+  dragdrop:  () => ({ id: uid('t'), type: 'dragdrop', pairs: [{ term: '', def: '' }, { term: '', def: '' }], fbCorrect: '', fbWrong: '' }),
+  gap:       () => ({ id: uid('t'), type: 'gap', text: 'Die *Frequenz* wird in *Hertz* gemessen.', fbCorrect: '', fbWrong: '' }),
+  order:     () => ({ id: uid('t'), type: 'order', items: ['Erster Schritt', 'Zweiter Schritt', 'Dritter Schritt'], fbCorrect: '', fbWrong: '' })
 }[t]());
 
 const newPage = () => ({ id: uid('p'), title: '', html: '', task: null });
@@ -1713,6 +1722,17 @@ function taskEditor(t) {
         <button class="rm" onclick="rmItem(${i})">✕</button></div>`).join('') +
       `<button class="add-row" onclick="addItem()">+ Schritt</button>`;
   }
+  body += `<div class="fb-editor-wrap">
+      <label class="fld">Rückmeldung bei richtiger Antwort <span style="font-weight:400;color:var(--faint)">(optional — z. B. Zusatzwissen als kleine Belohnung)</span></label>
+      <div class="fb-editor-hint">Erscheint direkt, wenn die Aufgabe richtig gelöst wurde. Text, Bilder und Links wie bei der Zusatzinfo einfügbar.</div>
+      <div class="editor zi-editor fb-zi" contenteditable="true" data-ph="z. B. Wusstest du, dass …?"
+           oninput="T().fbCorrect=this.innerHTML" onpaste="onPaste(event)"
+           ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">${t.fbCorrect || ''}</div>
+      <label class="fld">Rückmeldung bei falscher Antwort <span style="font-weight:400;color:var(--faint)">(optional — z. B. ein Tipp)</span></label>
+      <div class="editor zi-editor fb-zi" contenteditable="true" data-ph="z. B. ein Tipp zur Lösung"
+           oninput="T().fbWrong=this.innerHTML" onpaste="onPaste(event)"
+           ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">${t.fbWrong || ''}</div>
+    </div>`;
   box.innerHTML = `<div class="task-head"><span class="task-type">${TN[t.type]}</span>
     <button class="task-remove" onclick="copyTask()">Kopieren</button>
     <button class="task-remove" onclick="rmTask()">Entfernen</button></div>${body}`;
@@ -1888,27 +1908,27 @@ function renderTask(page, host) {
   const was = !!solved[page.id];   // in dieser Sitzung bereits gelöst
 
   if (t.type === 'mc') {
-    host.innerHTML = `<p class="task-q">${esc(t.q)}</p><div id="o_${t.id}"></div><div class="fb" id="f_${t.id}"></div>`;
-    const wrap = document.getElementById('o_' + t.id), fb = document.getElementById('f_' + t.id);
+    host.innerHTML = `<p class="task-q">${esc(t.q)}</p><div id="o_${t.id}"></div><div class="fb" id="f_${t.id}"></div><div id="fx_${t.id}"></div>`;
+    const wrap = document.getElementById('o_' + t.id), fb = document.getElementById('f_' + t.id), fx = document.getElementById('fx_' + t.id);
     t.opts.forEach((o, i) => {
       const b = document.createElement('button');
       b.className = 'opt'; b.textContent = o;
       if (was) { b.disabled = true; if (i === t.correct) b.classList.add('ok'); }
       b.onclick = () => {
         if (i === t.correct) {
-          b.classList.add('ok'); fb.textContent = 'Richtig.'; fb.className = 'fb ok';
+          b.classList.add('ok'); fb.textContent = 'Richtig.'; fb.className = 'fb ok'; fx.innerHTML = fbExtraHtml(t, true);
           wrap.querySelectorAll('.opt').forEach(x => x.disabled = true); done(page.id);
-        } else { b.classList.add('no'); fb.textContent = 'Noch nicht richtig.'; fb.className = 'fb no'; wrong(t.id); }
+        } else { b.classList.add('no'); fb.textContent = 'Noch nicht richtig.'; fb.className = 'fb no'; fx.innerHTML = fbExtraHtml(t, false); wrong(t.id); }
       };
       wrap.appendChild(b);
     });
-    if (was) { fb.textContent = 'Richtig.'; fb.className = 'fb ok'; }
+    if (was) { fb.textContent = 'Richtig.'; fb.className = 'fb ok'; fx.innerHTML = fbExtraHtml(t, true); }
   }
 
   if (t.type === 'multi') {
     host.innerHTML = `<p class="task-q">${esc(t.q)}</p><div id="o_${t.id}"></div>
-      <button class="check" id="k_${t.id}" ${was ? 'disabled' : ''}>Prüfen</button><div class="fb" id="f_${t.id}"></div>`;
-    const wrap = document.getElementById('o_' + t.id), fb = document.getElementById('f_' + t.id), kb = document.getElementById('k_' + t.id);
+      <button class="check" id="k_${t.id}" ${was ? 'disabled' : ''}>Prüfen</button><div class="fb" id="f_${t.id}"></div><div id="fx_${t.id}"></div>`;
+    const wrap = document.getElementById('o_' + t.id), fb = document.getElementById('f_' + t.id), kb = document.getElementById('k_' + t.id), fx = document.getElementById('fx_' + t.id);
     const picked = new Set(was ? t.correct : []);
     t.opts.forEach((o, i) => {
       const b = document.createElement('button');
@@ -1920,7 +1940,7 @@ function renderTask(page, host) {
       };
       wrap.appendChild(b);
     });
-    if (was) { fb.textContent = 'Richtig.'; fb.className = 'fb ok'; }
+    if (was) { fb.textContent = 'Richtig.'; fb.className = 'fb ok'; fx.innerHTML = fbExtraHtml(t, true); }
     kb.onclick = () => {
       const ok = picked.size === t.correct.length && [...picked].every(i => t.correct.includes(i));
       wrap.querySelectorAll('.opt').forEach((b, i) => {
@@ -1928,43 +1948,43 @@ function renderTask(page, host) {
         if (picked.has(i)) b.classList.add(t.correct.includes(i) ? 'ok' : 'no');
       });
       if (ok) {
-        fb.textContent = 'Richtig.'; fb.className = 'fb ok'; kb.disabled = true;
+        fb.textContent = 'Richtig.'; fb.className = 'fb ok'; fx.innerHTML = fbExtraHtml(t, true); kb.disabled = true;
         wrap.querySelectorAll('.opt').forEach(b => b.disabled = true); done(page.id);
-      } else { fb.textContent = 'Noch nicht richtig — prüfe deine Auswahl.'; fb.className = 'fb no'; wrong(t.id); }
+      } else { fb.textContent = 'Noch nicht richtig — prüfe deine Auswahl.'; fb.className = 'fb no'; fx.innerHTML = fbExtraHtml(t, false); wrong(t.id); }
     };
   }
 
   if (t.type === 'truefalse') {
-    host.innerHTML = `<p class="task-q">${esc(t.q)}</p><div id="o_${t.id}"></div><div class="fb" id="f_${t.id}"></div>`;
-    const wrap = document.getElementById('o_' + t.id), fb = document.getElementById('f_' + t.id);
+    host.innerHTML = `<p class="task-q">${esc(t.q)}</p><div id="o_${t.id}"></div><div class="fb" id="f_${t.id}"></div><div id="fx_${t.id}"></div>`;
+    const wrap = document.getElementById('o_' + t.id), fb = document.getElementById('f_' + t.id), fx = document.getElementById('fx_' + t.id);
     [['Wahr', true], ['Falsch', false]].forEach(([label, val]) => {
       const b = document.createElement('button');
       b.className = 'opt'; b.textContent = label;
       if (was) { b.disabled = true; if (val === t.answer) b.classList.add('ok'); }
       b.onclick = () => {
         if (val === t.answer) {
-          b.classList.add('ok'); fb.textContent = 'Richtig.'; fb.className = 'fb ok';
+          b.classList.add('ok'); fb.textContent = 'Richtig.'; fb.className = 'fb ok'; fx.innerHTML = fbExtraHtml(t, true);
           wrap.querySelectorAll('.opt').forEach(x => x.disabled = true); done(page.id);
-        } else { b.classList.add('no'); fb.textContent = 'Noch nicht richtig.'; fb.className = 'fb no'; wrong(t.id); }
+        } else { b.classList.add('no'); fb.textContent = 'Noch nicht richtig.'; fb.className = 'fb no'; fx.innerHTML = fbExtraHtml(t, false); wrong(t.id); }
       };
       wrap.appendChild(b);
     });
-    if (was) { fb.textContent = 'Richtig.'; fb.className = 'fb ok'; }
+    if (was) { fb.textContent = 'Richtig.'; fb.className = 'fb ok'; fx.innerHTML = fbExtraHtml(t, true); }
   }
 
   if (t.type === 'text') {
     host.innerHTML = `<p class="task-q">${esc(t.q)}</p>
       <input type="text" class="answer-in" id="a_${t.id}" placeholder="Deine Antwort"
         value="${was ? attr(t.answers[0]) : ''}" ${was ? 'disabled' : ''} autocomplete="off">
-      <button class="check" id="k_${t.id}" ${was ? 'disabled' : ''}>Prüfen</button><div class="fb" id="f_${t.id}"></div>`;
-    const inp = document.getElementById('a_' + t.id), fb = document.getElementById('f_' + t.id), kb = document.getElementById('k_' + t.id);
-    if (was) { inp.classList.add('ok'); fb.textContent = 'Richtig.'; fb.className = 'fb ok'; }
+      <button class="check" id="k_${t.id}" ${was ? 'disabled' : ''}>Prüfen</button><div class="fb" id="f_${t.id}"></div><div id="fx_${t.id}"></div>`;
+    const inp = document.getElementById('a_' + t.id), fb = document.getElementById('f_' + t.id), kb = document.getElementById('k_' + t.id), fx = document.getElementById('fx_' + t.id);
+    if (was) { inp.classList.add('ok'); fb.textContent = 'Richtig.'; fb.className = 'fb ok'; fx.innerHTML = fbExtraHtml(t, true); }
     const chk = () => {
       const v = inp.value.trim().toLowerCase();
       const ok = v !== '' && t.answers.some(a => a.trim().toLowerCase() === v);
       inp.classList.remove('ok', 'no'); inp.classList.add(ok ? 'ok' : 'no');
-      if (ok) { fb.textContent = 'Richtig.'; fb.className = 'fb ok'; inp.disabled = true; kb.disabled = true; done(page.id); }
-      else { fb.textContent = 'Noch nicht richtig.'; fb.className = 'fb no'; wrong(t.id); }
+      if (ok) { fb.textContent = 'Richtig.'; fb.className = 'fb ok'; fx.innerHTML = fbExtraHtml(t, true); inp.disabled = true; kb.disabled = true; done(page.id); }
+      else { fb.textContent = 'Noch nicht richtig.'; fb.className = 'fb no'; fx.innerHTML = fbExtraHtml(t, false); wrong(t.id); }
     };
     kb.onclick = chk;
     inp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); chk(); } };
@@ -1974,15 +1994,15 @@ function renderTask(page, host) {
     host.innerHTML = `<p class="task-q">${esc(t.q || 'Gib das Lösungswort ein.')}</p>
       <input type="text" class="answer-in" id="a_${t.id}" placeholder="Lösungswort"
         value="${was ? attr(t.answers[0]) : ''}" ${was ? 'disabled' : ''} autocomplete="off">
-      <button class="check" id="k_${t.id}" ${was ? 'disabled' : ''}>Prüfen</button><div class="fb" id="f_${t.id}"></div>`;
-    const inp = document.getElementById('a_' + t.id), fb = document.getElementById('f_' + t.id), kb = document.getElementById('k_' + t.id);
-    if (was) { inp.classList.add('ok'); fb.textContent = 'Richtig.'; fb.className = 'fb ok'; }
+      <button class="check" id="k_${t.id}" ${was ? 'disabled' : ''}>Prüfen</button><div class="fb" id="f_${t.id}"></div><div id="fx_${t.id}"></div>`;
+    const inp = document.getElementById('a_' + t.id), fb = document.getElementById('f_' + t.id), kb = document.getElementById('k_' + t.id), fx = document.getElementById('fx_' + t.id);
+    if (was) { inp.classList.add('ok'); fb.textContent = 'Richtig.'; fb.className = 'fb ok'; fx.innerHTML = fbExtraHtml(t, true); }
     const chk = () => {
       const v = inp.value.trim().toLowerCase();
       const ok = v !== '' && t.answers.some(a => a.trim().toLowerCase() === v);
       inp.classList.remove('ok', 'no'); inp.classList.add(ok ? 'ok' : 'no');
-      if (ok) { fb.textContent = 'Richtig.'; fb.className = 'fb ok'; inp.disabled = true; kb.disabled = true; done(page.id); }
-      else { fb.textContent = 'Noch nicht richtig — Lösungswort prüfen.'; fb.className = 'fb no'; wrong(t.id); }
+      if (ok) { fb.textContent = 'Richtig.'; fb.className = 'fb ok'; fx.innerHTML = fbExtraHtml(t, true); inp.disabled = true; kb.disabled = true; done(page.id); }
+      else { fb.textContent = 'Noch nicht richtig — Lösungswort prüfen.'; fb.className = 'fb no'; fx.innerHTML = fbExtraHtml(t, false); wrong(t.id); }
     };
     kb.onclick = chk;
     inp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); chk(); } };
@@ -1991,10 +2011,10 @@ function renderTask(page, host) {
   if (t.type === 'dragdrop') {
     host.innerHTML = `<p class="task-q">Ordne die Begriffe den Definitionen zu.</p>
       <div class="dd"><div id="c_${t.id}"></div><div id="s_${t.id}"></div></div>
-      <button class="check" id="k_${t.id}">Prüfen</button><div class="fb" id="f_${t.id}"></div>`;
+      <button class="check" id="k_${t.id}">Prüfen</button><div class="fb" id="f_${t.id}"></div><div id="fx_${t.id}"></div>`;
     const terms = was ? t.pairs.map((p, i) => ({ i, text: p.term })) : shuffle(t.pairs.map((p, i) => ({ i, text: p.term })));
     const cw = document.getElementById('c_' + t.id), sw = document.getElementById('s_' + t.id);
-    const fb = document.getElementById('f_' + t.id), kb = document.getElementById('k_' + t.id);
+    const fb = document.getElementById('f_' + t.id), kb = document.getElementById('k_' + t.id), fx = document.getElementById('fx_' + t.id);
     const put = {}; let sel = null;
     if (was) t.pairs.forEach((_, i) => put[i] = i);
     const draw = () => {
@@ -2022,14 +2042,14 @@ function renderTask(page, host) {
       });
     };
     draw();
-    if (was) { kb.disabled = true; fb.textContent = 'Alles richtig zugeordnet.'; fb.className = 'fb ok'; }
+    if (was) { kb.disabled = true; fb.textContent = 'Alles richtig zugeordnet.'; fb.className = 'fb ok'; fx.innerHTML = fbExtraHtml(t, true); }
     kb.onclick = () => {
       let all = true;
       sw.querySelectorAll('.slot').forEach((s, si) => {
         const ok = put[si] === si; s.classList.remove('ok', 'no'); s.classList.add(ok ? 'ok' : 'no'); if (!ok) all = false;
       });
-      if (all) { fb.textContent = 'Alles richtig zugeordnet.'; fb.className = 'fb ok'; kb.disabled = true; done(page.id); }
-      else { fb.textContent = 'Noch nicht alles richtig.'; fb.className = 'fb no'; wrong(t.id); }
+      if (all) { fb.textContent = 'Alles richtig zugeordnet.'; fb.className = 'fb ok'; fx.innerHTML = fbExtraHtml(t, true); kb.disabled = true; done(page.id); }
+      else { fb.textContent = 'Noch nicht alles richtig.'; fb.className = 'fb no'; fx.innerHTML = fbExtraHtml(t, false); wrong(t.id); }
     };
   }
 
@@ -2040,9 +2060,9 @@ function renderTask(page, host) {
       segs.map(s => s.blank
         ? `<input class="gap-in${was ? ' ok' : ''}" id="g_${t.id}_${bi}" value="${was ? attr(s.text) : ''}" ${was ? 'disabled' : ''} autocomplete="off">${bi++, ''}`
         : esc(s.text)).join('') +
-      `</p><button class="check" id="k_${t.id}" ${was ? 'disabled' : ''}>Prüfen</button><div class="fb" id="f_${t.id}"></div>`;
-    const fb = document.getElementById('f_' + t.id), kb = document.getElementById('k_' + t.id);
-    if (was) { fb.textContent = 'Alles richtig.'; fb.className = 'fb ok'; }
+      `</p><button class="check" id="k_${t.id}" ${was ? 'disabled' : ''}>Prüfen</button><div class="fb" id="f_${t.id}"></div><div id="fx_${t.id}"></div>`;
+    const fb = document.getElementById('f_' + t.id), kb = document.getElementById('k_' + t.id), fx = document.getElementById('fx_' + t.id);
+    if (was) { fb.textContent = 'Alles richtig.'; fb.className = 'fb ok'; fx.innerHTML = fbExtraHtml(t, true); }
     kb.onclick = () => {
       let all = true;
       segs.filter(s => s.blank).forEach((s, i) => {
@@ -2051,18 +2071,18 @@ function renderTask(page, host) {
         inp.classList.remove('ok', 'no'); inp.classList.add(ok ? 'ok' : 'no'); if (!ok) all = false;
       });
       if (all) {
-        fb.textContent = 'Alles richtig.'; fb.className = 'fb ok'; kb.disabled = true;
+        fb.textContent = 'Alles richtig.'; fb.className = 'fb ok'; fx.innerHTML = fbExtraHtml(t, true); kb.disabled = true;
         segs.filter(s => s.blank).forEach((s, i) => document.getElementById('g_' + t.id + '_' + i).disabled = true);
         done(page.id);
-      } else { fb.textContent = 'Noch nicht alles richtig.'; fb.className = 'fb no'; wrong(t.id); }
+      } else { fb.textContent = 'Noch nicht alles richtig.'; fb.className = 'fb no'; fx.innerHTML = fbExtraHtml(t, false); wrong(t.id); }
     };
   }
 
   if (t.type === 'order') {
     host.innerHTML = `<p class="task-q">Bringe die Schritte in die richtige Reihenfolge.</p>
-      <div id="l_${t.id}"></div><button class="check" id="k_${t.id}" ${was ? 'disabled' : ''}>Prüfen</button><div class="fb" id="f_${t.id}"></div>`;
+      <div id="l_${t.id}"></div><button class="check" id="k_${t.id}" ${was ? 'disabled' : ''}>Prüfen</button><div class="fb" id="f_${t.id}"></div><div id="fx_${t.id}"></div>`;
     let cur = was ? t.items.map((x, i) => ({ i, text: x })) : shuffle(t.items.map((x, i) => ({ i, text: x })));
-    const lw = document.getElementById('l_' + t.id), fb = document.getElementById('f_' + t.id), kb = document.getElementById('k_' + t.id);
+    const lw = document.getElementById('l_' + t.id), fb = document.getElementById('f_' + t.id), kb = document.getElementById('k_' + t.id), fx = document.getElementById('fx_' + t.id);
     const draw = () => {
       lw.innerHTML = '';
       cur.forEach((it, idx) => {
@@ -2083,14 +2103,14 @@ function renderTask(page, host) {
       });
     };
     draw();
-    if (was) { fb.textContent = 'Richtige Reihenfolge.'; fb.className = 'fb ok'; }
+    if (was) { fb.textContent = 'Richtige Reihenfolge.'; fb.className = 'fb ok'; fx.innerHTML = fbExtraHtml(t, true); }
     kb.onclick = () => {
       let all = true;
       lw.querySelectorAll('.ord').forEach((r, idx) => {
         const ok = cur[idx].i === idx; r.classList.remove('ok', 'no'); r.classList.add(ok ? 'ok' : 'no'); if (!ok) all = false;
       });
-      if (all) { fb.textContent = 'Richtige Reihenfolge.'; fb.className = 'fb ok'; kb.disabled = true; done(page.id); }
-      else { fb.textContent = 'Noch nicht richtig.'; fb.className = 'fb no'; wrong(t.id); }
+      if (all) { fb.textContent = 'Richtige Reihenfolge.'; fb.className = 'fb ok'; fx.innerHTML = fbExtraHtml(t, true); kb.disabled = true; done(page.id); }
+      else { fb.textContent = 'Noch nicht richtig.'; fb.className = 'fb no'; fx.innerHTML = fbExtraHtml(t, false); wrong(t.id); }
     };
   }
 }
@@ -2098,6 +2118,14 @@ function renderTask(page, host) {
 /* ================= Hilfen ================= */
 function esc(s) { return (s || '').replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
 function attr(s) { return (s || '').replace(/"/g, '&quot;'); }
+// Rückmeldungs-Zusatztext (Zusatzwissen bei richtig / Tipp bei falsch) für die Schüleransicht aufbereiten
+function fbExtraHtml(t, ok) {
+  const html = ok ? (t && t.fbCorrect) : (t && t.fbWrong);
+  if (!html) return '';
+  const bare = html.replace(/<[^>]*>/g, '').trim();
+  if (!bare && !/<img\b|<iframe\b/i.test(html)) return '';
+  return `<div class="fb-extra ${ok ? 'good' : 'hint'}">${html}</div>`;
+}
 function ytId(v) { if (!v) return ''; const m = v.match(/(?:youtu\.be\/|v=|embed\/|shorts\/)([A-Za-z0-9_-]{6,})/); return m ? m[1] : v.trim(); }
 function shuffle(a) { const c = [...a]; for (let i = c.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [c[i], c[j]] = [c[j], c[i]]; } return c; }
 function parseGaps(t) {
@@ -2117,7 +2145,7 @@ const slug = s => (s || 'lernstrecke').toLowerCase().replace(/[^a-z0-9äöüß]+
 // Ältere Kursdateien auf das aktuelle Format bringen
 function normTask(t) {
   if (!t) return null;
-  const o = { id: t.id || uid('t'), type: t.type };
+  const o = { id: t.id || uid('t'), type: t.type, fbCorrect: t.fbCorrect || '', fbWrong: t.fbWrong || '' };
   if (t.type === 'mc') {
     o.q = t.q !== undefined ? t.q : (t.question || '');
     o.opts = t.opts || t.options || ['', ''];
